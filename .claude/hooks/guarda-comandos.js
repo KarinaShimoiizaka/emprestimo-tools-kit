@@ -93,6 +93,14 @@ function checarParaTodos(comando) {
     );
   }
 
+  // Publicação das fotos no Storage do deploy: só a pessoa roda, no
+  // terminal dela (skill imagens-equipamentos, contrato item 7).
+  if (/imagens:publicar|publicar\.js/i.test(comando)) {
+    bloquear(
+      'o publicar da skill imagens-equipamentos escreve no Supabase do deploy e só a pessoa roda. Entregue o comando para ela.'
+    );
+  }
+
   // Status "pronta" de spec mudado pelo terminal contornaria a trava.
   if (/spec-[\w-]+\.md/i.test(comando) && /pronta/i.test(comando)) {
     bloquear(

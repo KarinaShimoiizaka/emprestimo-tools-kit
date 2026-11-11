@@ -29,6 +29,8 @@
       "Bash(npx vercel *)",
       "Bash(supabase *)",
       "Bash(npx supabase *)",
+      "Bash(npm run imagens:publicar*)",
+      "Bash(node *publicar.js*)",
 
       "PowerShell(git commit *)",
       "PowerShell(git push *)",
@@ -53,7 +55,9 @@
       "PowerShell(vercel *)",
       "PowerShell(npx vercel *)",
       "PowerShell(supabase *)",
-      "PowerShell(npx supabase *)"
+      "PowerShell(npx supabase *)",
+      "PowerShell(npm run imagens:publicar*)",
+      "PowerShell(node *publicar.js*)"
     ]
   },
   "hooks": {
