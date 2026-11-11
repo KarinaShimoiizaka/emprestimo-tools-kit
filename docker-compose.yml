@@ -48,6 +48,9 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
+      # O FRONTEND_URL do .env é o da Vercel; localmente o front é este.
+      # Sem sobrescrever, o CORS barra o front do próprio compose.
+      FRONTEND_URL: http://localhost:3000
       # Sobrescreve o DATABASE_URL do .env para apontar ao Postgres local.
       # Apague estas duas linhas para usar o banco que estiver no .env.
       #
