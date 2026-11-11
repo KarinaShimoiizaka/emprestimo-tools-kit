@@ -89,6 +89,7 @@ Decidida no [ADR-001](docs/adrs/adr-001-stack.md), status **aceito**.
 | Testes | Jest (**não** Vitest) |
 | Execução local | Docker Compose |
 | Banco | PostgreSQL |
+| Fotos de equipamento | Pixabay + sharp, na raiz, fora do deploy ([ADR-002](docs/adrs/adr-002-imagens-equipamentos.md)) |
 
 **Alternativas já descartadas** — não reabrir sem um ADR novo: Java/Spring,
 Express ou Fastify puro, GraphQL, SSR com templates, autenticação própria
@@ -109,19 +110,26 @@ caso o custo se mostre maior que o previsto.
 
 ```
 .                                repositório emprestimo-tools-kit (sem backend/ e frontend/)
-├── .gitignore                   ignora backend/, frontend/, atividade/ e .env
+├── .gitignore                   ignora backend/, frontend/, atividade/, .env, node_modules/ e imagens/ (menos o manifesto)
 ├── AGENT.md                     este arquivo
 ├── CLAUDE.md                    só manda ler este arquivo
 ├── ENTREGA.md                   decisões da prática, com alternativa, motivo e evidência
 ├── docker-compose.yml           db + frontend; backend atrás de profile
+├── package.json                 só ferramentas: sharp (ADR-002), npm test dos hooks e da skill
+├── .env                         PIXABAY_API_KEY (não versionado)
+├── imagens/
+│   └── manifesto.json           foto escolhida e créditos de cada equipamento (o resto fica fora do git)
 ├── .claude/
 │   ├── settings.json            permissions.deny e registro dos hooks
 │   ├── agents/
 │   │   └── verificador-spec.md  subagente que confere specs (ver §6)
+│   ├── skills/
+│   │   └── imagens-equipamentos/ SKILL.md, references/ e scripts/ (preparar, publicar)
 │   └── hooks/
 │       ├── guarda-comandos.js   bloqueia comandos proibidos; lista fechada do verificador
 │       ├── exige-verificacao.js trava o status "pronta" sem veredito PRONTA
-│       └── registra-verificacao.js grava cada rodada em docs/verificacoes/
+│       ├── registra-verificacao.js grava cada rodada em docs/verificacoes/
+│       └── testa-hooks.js       os casos que cada hook deve liberar ou bloquear
 ├── atividade/                   enunciado da prática (HTML); fora do git, contém a senha da turma
 ├── backend/                     repositório git próprio (emprestimo-backend)
 │   ├── DockerFile               alvos `dev` e `runner`
@@ -171,7 +179,8 @@ caso o custo se mostre maior que o previsto.
     ├── prd.md                   especificação de layout e regras (v1)
     ├── stacks.md                cópia idêntica de prd.md
     ├── adrs/
-    │   └── adr-001-stack.md     decisão de stack
+    │   ├── adr-001-stack.md     decisão de stack
+    │   └── adr-002-imagens-equipamentos.md  Pixabay, sharp, fora do deploy
     ├── skill/
     │   └── solid.md             princípios de código
     ├── verificacoes/            uma rodada do verificador por arquivo (escrita só pelo hook)
@@ -255,8 +264,9 @@ Observações:
   para o projeto inteiro (PRD, ADRs, regras); o que é de um lado só fica com
   aquele lado.
 - **Decisões de arquitetura** viram ADR em `docs/adrs/`, numerado em
-  sequência. O ADR-001 já antecipa: estrutura de pastas e camadas seria
-  ADR-002; abandonar RLS em favor só dos guards seria ADR-003.
+  sequência. O ADR-001 antecipava a estrutura de pastas como ADR-002 e o
+  abandono de RLS como ADR-003; nenhuma das duas foi escrita, e o 002 ficou
+  com as fotos de equipamento. Se vierem, pegam o próximo número livre.
 - **Design system:** Nocturne, com acento teal `#2fb8ac` e tipografia
   Raleway. Interface escura e densa; o acento é linha e brilho, nunca
   preenchimento sólido. Nada de preto puro nem branco puro. Todos os valores
@@ -264,10 +274,16 @@ Observações:
 
 ---
 
-## 6. Subagentes
+## 6. Subagentes e skills
 
-Moram em [.claude/agents/](.claude/agents/), onde o Claude Code os descobre
-sozinho.
+Moram em [.claude/agents/](.claude/agents/) e
+[.claude/skills/](.claude/skills/), onde o Claude Code os descobre sozinho.
+As regras de skill estão em [docs/rules/skill.md](docs/rules/skill.md).
+
+| Skill | Quando |
+|---|---|
+| [imagens-equipamentos](.claude/skills/imagens-equipamentos/SKILL.md) | qualquer foto de equipamento; é a única origem permitida. O `publicar` só a pessoa roda |
+| [solid](docs/skill/solid.md) | princípios de código (skill antiga, em `docs/skill/`) |
 
 | Subagente | Quando | O que garante |
 |---|---|---|

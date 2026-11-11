@@ -14,7 +14,7 @@ do projeto inteiro, que vale para pessoa e agente.
 |---|---|---|
 | `backend/.env` | `SUPABASE_URL`, `SUPABASE_JWKS_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `STORAGE_NAME`, `DATABASE_URL`, `DIRECT_URL` | não |
 | `frontend/.env` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | não |
-| `.env` (raiz) | não existe hoje; é onde o Compose leria `POSTGRES_*`, se definido | não |
+| `.env` (raiz) | `PIXABAY_API_KEY`; é também onde o Compose leria `POSTGRES_*`, se definido | não |
 
 O `.gitignore` de cada repositório (`backend/` e `frontend/`) cobre `.env` e
 `.env.*`, menos `.env.example`.
@@ -36,6 +36,9 @@ escreve em produção, e por isso o agente não roda nenhum (ver
 | `SUPABASE_URL`, `SUPABASE_JWKS_URL` | pública | sim |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | pública por desenho do Supabase | sim |
 | `STORAGE_NAME` | configuração | sim, se um dia for usada no front |
+| `PIXABAY_API_KEY` | **secreta**: gasta a cota da conta da pessoa | nunca; só os scripts da skill `imagens-equipamentos` leem |
+
+O `.gitignore` da raiz cobre `.env` e `.env.*`, menos `.env.example`.
 
 "Pública" quer dizer que o valor pode chegar ao navegador — não que pode ser
 escrito em código ou em documentação.

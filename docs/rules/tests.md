@@ -11,6 +11,12 @@ não Vitest. No frontend, componentes usam Testing Library (FE-01 §9).
 `backend/src/perfil/`, `backend/src/comum/valores/`, `frontend/src/lib/` e
 `frontend/src/app/login/`.
 
+**Na raiz** (ferramentas, sem código de produto), os testes usam o test
+runner do próprio Node (`node --test`) e não o Jest, para não trazer uma
+dependência só para isso ([ADR-002](../adrs/adr-002-imagens-equipamentos.md)).
+`npm test` na raiz roda os testes da skill `imagens-equipamentos` e os casos
+dos hooks (`.claude/hooks/testa-hooks.js`).
+
 **Atenção:** o `backend/.env` aponta para o Supabase do deploy. Teste que
 abre conexão de verdade com o banco não roda com esse `.env` (regra 7).
 

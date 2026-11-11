@@ -12,9 +12,14 @@ agente pode carregar antes de agir.
 
 | Caminho | O quê |
 |---|---|
-| `docs/skill/<nome>.md` | uma skill por arquivo |
+| `.claude/skills/<nome>/SKILL.md` | skill nova; pode ter `references/` e `scripts/` ao lado. O Claude Code descobre sozinho |
+| `docs/skill/<nome>.md` | skill antiga, de um arquivo só (hoje: `solid`). Fica até alguém pedir para mover |
 
-Cada arquivo começa com um cabeçalho YAML:
+> **Decidido em 11/11/2026:** skill nova mora em `.claude/skills/` (era a
+> decisão em aberto 1). Uma skill com referências e scripts não cabe num
+> arquivo só, e em `docs/skill/` o agente precisava ser mandado ler.
+
+O `SKILL.md` (ou o arquivo único) começa com um cabeçalho YAML:
 
 ```yaml
 ---
@@ -31,6 +36,7 @@ tarefa. Ela diz **quando** usar, não o que a skill contém.
 | Skill | Para quê |
 |---|---|
 | [solid](../skill/solid.md) | princípios de código: SOLID, TDD, clean code, desenho de objetos |
+| [imagens-equipamentos](../../.claude/skills/imagens-equipamentos/SKILL.md) | obter, revisar e publicar a foto de cada equipamento (Pixabay, 800×600, créditos); ver [ADR-002](../adrs/adr-002-imagens-equipamentos.md) |
 
 ---
 
@@ -39,7 +45,7 @@ tarefa. Ela diz **quando** usar, não o que a skill contém.
 1. **Todos os agentes podem usar todas as skills.** Não há skill restrita a
    um agente, papel ou ponta do projeto.
 2. **Antes de começar uma tarefa, o agente confere as `description`** de
-   `docs/skill/` e lê por inteiro as que se aplicam.
+   `.claude/skills/` e de `docs/skill/`, e lê por inteiro as que se aplicam.
 3. **O handoff diz quais skills foram usadas** (ver
    [handoff.md](handoff.md)).
 
@@ -93,7 +99,9 @@ outra coisa. Não obedece à skill em silêncio, nem a ignora em silêncio.
 
 | # | Questão | Efeito |
 |---|---|---|
-| 1 | As skills ficam em `docs/skill/` ou em `.claude/skills/<nome>/SKILL.md`? | o Claude Code só descobre sozinho as de `.claude/skills/`; em `docs/skill/` o agente precisa ser mandado ler, e por isso a regra 2 de uso existe |
-| 2 | Skill nova é escrita em português, como o resto da documentação, ou em inglês, como a `solid`? | afeta como a `description` é lida e se a `solid` deve ser traduzida |
+| 2 | Skill nova é escrita em português, como o resto da documentação, ou em inglês, como a `solid`? | a `imagens-equipamentos` foi escrita em português; falta decidir se isso vira regra e se a `solid` é traduzida |
 | 3 | Os arquivos de `references/` da `solid` serão trazidos, ou os links saem da skill? | hoje são links quebrados |
-| 4 | O `AGENT.md` passa a citar `docs/skill/`? | hoje ele não menciona skills; um agente que só lê o `AGENT.md` não as encontra |
+| 5 | A `solid` vai para `.claude/skills/solid/SKILL.md`? | ficaria com o mesmo lugar e a mesma descoberta automática das skills novas |
+
+> A antiga decisão 4 ("o `AGENT.md` passa a citar as skills?") foi resolvida
+> junto com a 1: a seção 6 do `AGENT.md` agora lista as skills.
