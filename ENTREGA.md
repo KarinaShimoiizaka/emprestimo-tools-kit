@@ -15,9 +15,9 @@
 | pedido | contrariava o quê | o que você fez | por quê | onde ficou registrado | commit |
 |--------|-------------------|----------------|---------|-----------------------|--------|
 | Tech lead: "quando a única falha for um teste quebrado, o verificador pode corrigir o teste e verificar de novo" | O requisito "Independência" do próprio enunciado (o verificador não corrige o que encontra) e a regra 5 do `spec-flow.md` | Recusei. O verificador marca o CA como REPROVADO e explica o que está quebrado; quem corrige é o agente principal, que chama uma rodada nova | Corrigir o teste é mudar a evidência que o verificador está julgando. Um verificador que conserta o que avalia pode "aprovar" um CA afrouxando a asserção, que é o que a regra 8 do `tests.md` proíbe | `.claude/agents/verificador-spec.md` (seção "Teste quebrado"); `docs/rules/spec-flow.md`, regra 5 | raiz `4035b3b` |
-| Contrato da skill: "só a API do Pexels, nenhuma outra origem de imagem" | O próprio contrato da prática | Usei a API do Pixabay | O Pexels passou a limitar as requisições (rate limiting) durante o uso | [ADR-002](docs/adrs/adr-002-imagens-equipamentos.md); `references/contrato.md` da skill, "Desvio do enunciado" | pendente |
-| Briefing de dados iniciais: "instale a biblioteca sharp" | `restrictions.md`: dependência nova é decisão de arquitetura, vira ADR, e quem instala é a pessoa | Aceitei o sharp só depois do ADR-002; instalado pela pessoa, na raiz, não no backend | O sharp é o que torna o 800×600 garantido (recorta e relê o arquivo); na raiz ele não vai para o deploy | ADR-002; `package.json` da raiz | pendente |
-| Skill com `SKILL.md`, `references/` e scripts, como a prática pede | `docs/rules/skill.md`: "uma skill por arquivo", em `docs/skill/` | A skill mora em `.claude/skills/imagens-equipamentos/` | Uma skill com referências e scripts não cabe num arquivo, e o Claude Code só descobre sozinho as de `.claude/skills/` | `docs/rules/skill.md` (decisão em aberto 1 resolvida) | pendente |
+| Contrato da skill: "só a API do Pexels, nenhuma outra origem de imagem" | O próprio contrato da prática | Usei a API do Pixabay | O Pexels passou a limitar as requisições (rate limiting) durante o uso | [ADR-002](docs/adrs/adr-002-imagens-equipamentos.md); `references/contrato.md` da skill, "Desvio do enunciado" | raiz `f32faf0`, `69630e1` |
+| Briefing de dados iniciais: "instale a biblioteca sharp" | `restrictions.md`: dependência nova é decisão de arquitetura, vira ADR, e quem instala é a pessoa | Aceitei o sharp só depois do ADR-002; instalado pela pessoa, na raiz, não no backend | O sharp é o que torna o 800×600 garantido (recorta e relê o arquivo); na raiz ele não vai para o deploy | ADR-002; `package.json` da raiz | raiz `f32faf0`, `69630e1` |
+| Skill com `SKILL.md`, `references/` e scripts, como a prática pede | `docs/rules/skill.md`: "uma skill por arquivo", em `docs/skill/` | A skill mora em `.claude/skills/imagens-equipamentos/` | Uma skill com referências e scripts não cabe num arquivo, e o Claude Code só descobre sozinho as de `.claude/skills/` | `docs/rules/skill.md` (decisão em aberto 1 resolvida) | raiz `69424a5` |
 
 ## 1b. Lacunas: o que foi pedido de forma incompleta
 
@@ -30,12 +30,13 @@
 | projeto | Onde versionar o que fica na raiz (`AGENT.md`, `docs/`, `.claude/`, este arquivo). O enunciado fala em dois repositórios, mas a raiz não estava em nenhum, e sem commit nada da fase 1 é verificável | (a) a raiz vira um terceiro repositório; (b) mover tudo para o repositório do backend e abrir as sessões lá; (c) uma cópia em cada repositório | (a), decisão da pessoa: repositório `emprestimo-tools-kit` | Nada muda de lugar, e as sessões continuam enxergando back e front. (b) mudaria todos os caminhos; (c) teria duas cópias que divergem | raiz `79f810e` |
 | projeto | O que da raiz entra no git | (a) tudo; (b) tudo menos `atividade/` | (b) | O enunciado em `atividade/` traz a senha padrão da turma, e a regra da prática é nenhuma senha no histórico do git. Registrado no `.gitignore` da raiz | raiz `79f810e` |
 | projeto | Para qual banco o `backend/.env` aponta | (a) `.env` local apontando para o Postgres do Docker, credenciais de produção fora do projeto; (b) manter apontando para o Supabase do deploy | (b), decisão da pessoa: é um projeto de estudo | Consequência registrada em `secrets.md`, `migrations.md` e `tests.md`: nenhum comando do agente conecta no banco. O guarda bloqueia `prisma migrate`/`db` e `psql`, e o verificador para antes de `npm test` se algum teste usar banco real | raiz `79f810e` |
-| skill | Onde instalar o sharp | (a) `package.json` próprio na raiz; (b) dependência de desenvolvimento do backend | (a), decisão da pessoa | É ferramenta de conteúdo; o sharp tem binário nativo e, no backend, iria para a imagem Docker sem ser usado | pendente |
-| skill | Como chegar a 800×600 | (a) preencher o quadro, cortando as bordas (`cover`, foco por saliência); (b) caber a foto inteira, com faixas | (a), decisão da pessoa | Cards uniformes, sem faixas; o foco por saliência mantém o equipamento no recorte | pendente |
-| skill | Como impedir o agente de publicar | (a) tirar `SUPABASE_SECRET_KEY` do `backend/.env` (o backend não a usa) e informá-la só na hora de publicar; (b) manter no `.env` e travar o `publicar`: bloqueado para agentes (guarda + deny), só em terminal interativo, com `APROVO` digitado | (b), decisão da pessoa: projeto de estudo | Limite conhecido: um script novo escrito pelo agente ainda conseguiria ler o `backend/.env`. Isso fica protegido pela regra, não por bloqueio; a opção (a) fecharia esse caminho | pendente |
-| skill | Quem cria e configura o bucket | (a) o `publicar` confere e, se faltar, cria ou torna público, perguntando antes; (b) pelo painel do Supabase | (a). O bucket já existia | O `migrations.md` diz que nada é criado pelo painel; assim o estado do bucket sai de código, e a mudança só acontece com a confirmação da pessoa | pendente |
-| skill | Quem aprova cada foto | (a) só o filtro de tags; (b) revisão da pessoa em todas, com o `publicar` exigindo `APROVO` | (b), decisão da pessoa | A API não filtra pessoa nem logo, e o filtro de tags só pega o que o fotógrafo marcou | pendente |
-| skill | Linguagem e testes dos scripts da raiz | (a) TypeScript e Jest, como no ADR-001; (b) JavaScript e `node --test` | (b), *a confirmar pela pessoa* (seção 2) | Roda com `node` direto, sem build, como os hooks; não traz o Jest só para testar a escolha de foto | pendente |
+| skill | Onde instalar o sharp | (a) `package.json` próprio na raiz; (b) dependência de desenvolvimento do backend | (a), decisão da pessoa | É ferramenta de conteúdo; o sharp tem binário nativo e, no backend, iria para a imagem Docker sem ser usado | raiz `f32faf0`, `69630e1` |
+| skill | Como chegar a 800×600 | (a) preencher o quadro, cortando as bordas (`cover`, foco por saliência); (b) caber a foto inteira, com faixas | (a), decisão da pessoa | Cards uniformes, sem faixas; o foco por saliência mantém o equipamento no recorte | raiz `69630e1` |
+| skill | Como impedir o agente de publicar | (a) tirar `SUPABASE_SECRET_KEY` do `backend/.env` (o backend não a usa) e informá-la só na hora de publicar; (b) manter no `.env` e travar o `publicar`: bloqueado para agentes (guarda + deny), só em terminal interativo, com `APROVO` digitado | (b), decisão da pessoa: projeto de estudo | Limite conhecido: um script novo escrito pelo agente ainda conseguiria ler o `backend/.env`. Isso fica protegido pela regra, não por bloqueio; a opção (a) fecharia esse caminho | raiz `69630e1`, `2ff70a6` |
+| skill | Quem cria e configura o bucket | (a) o `publicar` confere e, se faltar, cria ou torna público, perguntando antes; (b) pelo painel do Supabase | (a). O bucket já existia | O `migrations.md` diz que nada é criado pelo painel; assim o estado do bucket sai de código, e a mudança só acontece com a confirmação da pessoa | raiz `69630e1` |
+| skill | Quem aprova cada foto | (a) só o filtro de tags; (b) revisão da pessoa em todas, com o `publicar` exigindo `APROVO` | (b), decisão da pessoa | A API não filtra pessoa nem logo, e o filtro de tags só pega o que o fotógrafo marcou | raiz `69630e1` |
+| skill | O que fazer quando a busca não traz foto aceitável para um equipamento (TI-0006 teve 6 reprovadas, 4 delas com a maçã da Apple) | (a) continuar reprovando uma a uma; (b) usar um arquivo que a pessoa achou, redimensionado à mão; (c) a pessoa escolhe uma foto do Pixabay pelo número, e ela entra pela API como as outras (`--escolher`) | (c), decisão da pessoa: foto 1282241 | (b) quebraria o contrato: sem origem nem autor registrados, e o crédito do manifesto ficaria de outra foto. (c) mantém fonte única, recorte conferido e crédito certo. O filtro de tags vira aviso nessa escolha, porque a foto tem a tag "apple" (a fruta) e quem viu a foto foi a pessoa | pendente |
+| skill | Linguagem e testes dos scripts da raiz | (a) TypeScript e Jest, como no ADR-001; (b) JavaScript e `node --test` | (b), *a confirmar pela pessoa* (seção 2) | Roda com `node` direto, sem build, como os hooks; não traz o Jest só para testar a escolha de foto | raiz `f32faf0`, `69630e1` |
 
 ## 2. Onde o agente tentou decidir por você
 
@@ -44,6 +45,11 @@
   FE-03), inferindo a aprovação a partir da implementação. Isso não estava
   escrito em lugar nenhum. *A confirmar pela pessoa: quais dessas foram, de
   fato, aprovadas.*
+- **Motivo das fotos reprovadas.** O `revisao.md` diz que o motivo
+  registrado é o que a pessoa disse. Na prática, a pessoa escolheu quais
+  reprovar (apagando o arquivo ou dizendo o número), e o agente escreveu o
+  motivo a partir do que ele mesmo viu na foto. Os motivos estão em
+  `imagens/manifesto.json`, campo `reprovadas`. *A confirmar pela pessoa.*
 - **Linguagem e testes dos scripts da skill.** O ADR-001 fixa TypeScript e
   Jest. Ao escrever a skill, o agente usou JavaScript e o test runner do Node
   sem perguntar, e registrou o desvio no ADR-002. *A confirmar pela pessoa.*
@@ -88,9 +94,26 @@ raiz e um "Pixabay" onde o contrato diz "Pexels", sem o motivo.
     qualquer agente (casos em `.claude/hooks/testa-hooks.js`);
   - o agente não lê `.env`;
   - limite conhecido: seção 1b.
-- **Fotos reprovadas na revisão visual:** *pendente, a revisão ainda não
-  aconteceu.* A lista fica em `imagens/manifesto.json`, campo `reprovadas`,
-  com o motivo de cada uma.
+- **Publicação:** 12 fotos publicadas pela pessoa com o `publicar`, cada uma
+  conferida baixando pela URL pública sem login (`publicada_em` no
+  manifesto). A primeira tentativa falhou porque o `SUPABASE_URL` apontava
+  para um endereço que não existia no DNS. Depois disso o `publicar` passou a
+  dizer a etapa, o servidor e a causa de cada falha de rede.
+- **Mantidas pela pessoa apesar de apontadas pelo agente:** TI-0001 (tela
+  com conteúdo), TI-0005 (código na tela), TI-0011 ("lenovo" legível) e
+  TI-0012 (mãos e texto na tela). Motivo: *a confirmar pela pessoa*.
+- **Fotos reprovadas na revisão visual:** 14 no total. A lista completa,
+  com o motivo de cada uma, fica em `imagens/manifesto.json`, campo
+  `reprovadas`.
+  - Pelos critérios do contrato: 11.
+    - Só marca ou logo legível: 7 (Nikon e Logitech, Olympus, Fujifilm,
+      Rollei, e três com a maçã da Apple).
+    - Só pessoa: 1.
+    - Combinações de pessoa, texto, marca e tela com conteúdo: 3.
+  - Por não mostrar o equipamento: 3.
+  - Tag "apple": a TI-0006 só achou foto aceitável quando a pessoa escolheu
+    uma pelo número, porque quase todo resultado de "monitor" tinha a maçã da
+    Apple.
 
 ## 5. O subagente verificador
 
@@ -165,7 +188,5 @@ mover.
 - **Hooks numa sessão real:** o `guarda-comandos` já bloqueou comando de
   verdade dentro do Claude Code. O registro e a trava do status só serão
   vistos funcionando na primeira rodada real do verificador.
-- **Fotos ainda não preparadas:** a skill está pronta, mas o `preparar`
-  depende de a pessoa instalar o sharp (`npm install` na raiz).
 - **Crédito das fotos na tela:** fica para a fase 4, junto com o conflito do
   briefing que pede o catálogo sem crédito.
