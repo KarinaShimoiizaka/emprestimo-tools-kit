@@ -73,6 +73,20 @@ test('sem resultado que sirva, não escolhe nada', () => {
   assert.equal(r.descartes.length, 1);
 });
 
+test('foto escolhida pela pessoa: tag proibida só avisa', () => {
+  const r = sel.validarEscolha(hit({ id: 1282241, tags: 'apple, smartphone, desk, laptop' }));
+  assert.deepEqual(r.problemas, []);
+  assert.equal(r.avisos.length, 1);
+  assert.match(r.avisos[0], /apple/);
+});
+
+test('foto escolhida pela pessoa: repetida, reprovada ou pequena bloqueia', () => {
+  const op = { idsEmUso: new Set([5]), idsReprovados: new Set([6]) };
+  assert.match(sel.validarEscolha(hit({ id: 5 }), op).problemas.join(), /já usada/);
+  assert.match(sel.validarEscolha(hit({ id: 6 }), op).problemas.join(), /reprovada/);
+  assert.match(sel.validarEscolha(hit({ id: 7, imageWidth: 700, imageHeight: 500 }), op).problemas.join(), /pequena/);
+});
+
 function itemValido(p, n) {
   return {
     patrimonio: p,

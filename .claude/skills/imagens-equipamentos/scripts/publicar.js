@@ -46,6 +46,22 @@ function perguntar(texto) {
   );
 }
 
+// fetch com erro legível: diz a etapa, o servidor e a causa (o "fetch failed"
+// do Node sozinho não diz nada). Nunca mostra cabeçalho nem chave.
+async function chamar(url, opcoes, etapa) {
+  try {
+    return await fetch(url, opcoes);
+  } catch (e) {
+    const causa = (e.cause && (e.cause.code || e.cause.message)) || e.message;
+    const servidor = new URL(url).host;
+    const dica =
+      causa === 'ENOTFOUND'
+        ? ' Esse endereço não existe no DNS: confira o SUPABASE_URL do backend/.env com o "Project URL" em Supabase > Project Settings > API.'
+        : '';
+    throw new Error(`${etapa}: não conectou em ${servidor} (${causa}).${dica}`);
+  }
+}
+
 async function corpoDoErro(r) {
   try {
     return (await r.text()).slice(0, 300);
@@ -56,7 +72,7 @@ async function corpoDoErro(r) {
 
 async function garantirBucketPublico(base, bucket, auth) {
   const url = `${base}/storage/v1/bucket/${encodeURIComponent(bucket)}`;
-  let r = await fetch(url, { headers: auth });
+  let r = await chamar(url, { headers: auth }, 'consultar o bucket');
 
   if (r.ok) {
     const info = await r.json();
@@ -65,22 +81,30 @@ async function garantirBucketPublico(base, bucket, auth) {
       `O bucket "${bucket}" não é público, e as fotos precisam abrir sem login. Tornar público? (s/n): `
     );
     if (ok.toLowerCase() !== 's') falhar('publicação cancelada: o bucket continua privado.');
-    r = await fetch(url, {
-      method: 'PUT',
-      headers: { ...auth, 'content-type': 'application/json' },
-      body: JSON.stringify({ id: bucket, name: bucket, public: true }),
-    });
+    r = await chamar(
+      url,
+      {
+        method: 'PUT',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ id: bucket, name: bucket, public: true }),
+      },
+      'tornar o bucket público'
+    );
     if (!r.ok) falhar(`não consegui tornar o bucket público: ${r.status} ${await corpoDoErro(r)}`);
     return 'passou a ser público';
   }
 
   const erro = await corpoDoErro(r);
   if (!/not.?found/i.test(erro)) falhar(`não consegui consultar o bucket: ${r.status} ${erro}`);
-  r = await fetch(`${base}/storage/v1/bucket`, {
-    method: 'POST',
-    headers: { ...auth, 'content-type': 'application/json' },
-    body: JSON.stringify({ id: bucket, name: bucket, public: true }),
-  });
+  r = await chamar(
+    `${base}/storage/v1/bucket`,
+    {
+      method: 'POST',
+      headers: { ...auth, 'content-type': 'application/json' },
+      body: JSON.stringify({ id: bucket, name: bucket, public: true }),
+    },
+    'criar o bucket'
+  );
   if (!r.ok) falhar(`não consegui criar o bucket: ${r.status} ${await corpoDoErro(r)}`);
   return 'foi criado, público';
 }
@@ -146,15 +170,23 @@ async function principal() {
     const caminho = i.caminho_storage.split('/').map(encodeURIComponent).join('/');
     const buf = arquivos.get(i.patrimonio);
 
-    const envio = await fetch(`${base}/storage/v1/object/${b}/${caminho}`, {
-      method: 'POST',
-      headers: { ...auth, 'content-type': 'image/jpeg', 'x-upsert': 'true', 'cache-control': '3600' },
-      body: buf,
-    });
+    const envio = await chamar(
+      `${base}/storage/v1/object/${b}/${caminho}`,
+      {
+        method: 'POST',
+        headers: { ...auth, 'content-type': 'image/jpeg', 'x-upsert': 'true', 'cache-control': '3600' },
+        body: buf,
+      },
+      `${i.patrimonio}: enviar`
+    );
     if (!envio.ok) falhar(`${i.patrimonio}: o envio respondeu ${envio.status} ${await corpoDoErro(envio)}`);
 
     // Abre pela URL pública, sem nenhuma credencial, e compara os bytes.
-    const publica = await fetch(`${base}/storage/v1/object/public/${b}/${caminho}?v=${i.sha256.slice(0, 8)}`);
+    const publica = await chamar(
+      `${base}/storage/v1/object/public/${b}/${caminho}?v=${i.sha256.slice(0, 8)}`,
+      {},
+      `${i.patrimonio}: abrir pela URL pública`
+    );
     if (!publica.ok) falhar(`${i.patrimonio}: a URL pública respondeu ${publica.status}`);
     if (sha256(Buffer.from(await publica.arrayBuffer())) !== i.sha256) {
       falhar(`${i.patrimonio}: o que a URL pública devolve não é o arquivo enviado`);

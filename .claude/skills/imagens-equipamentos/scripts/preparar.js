@@ -8,6 +8,11 @@
 // Uso, na raiz do projeto:
 //   npm run imagens:preparar
 //   npm run imagens:preparar -- --reprovar TI-0005 "pessoa ao fundo" --reprovar TI-0011 "logo legível"
+//   npm run imagens:preparar -- --reprovar TI-0006 "motivo" --escolher TI-0006 1282241
+//
+// --escolher usa uma foto do Pixabay que a pessoa escolheu pelo número (o
+// fim do link da página). A foto vem pela API, como as outras; o slot precisa
+// estar livre (a foto atual reprovada antes), para toda troca ter motivo.
 //
 // Idempotente: equipamento que já tem foto preparada (arquivo presente e com
 // o mesmo sha256) é mantido, sem nova busca.
@@ -36,17 +41,27 @@ function falhar(msg) {
 
 function lerArgs(argv) {
   const reprovar = [];
+  const escolher = [];
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] !== '--reprovar') falhar(`argumento desconhecido: ${argv[i]}`);
-    const patrimonio = argv[i + 1];
-    const motivo = argv[i + 2];
-    if (!patrimonio || !motivo || motivo.startsWith('--')) {
-      falhar('uso: --reprovar TI-0000 "motivo dito pela pessoa"');
+    const patrimonio = String(argv[i + 1] || '').toUpperCase();
+    if (argv[i] === '--reprovar') {
+      const motivo = argv[i + 2];
+      if (!patrimonio || !motivo || motivo.startsWith('--')) {
+        falhar('uso: --reprovar TI-0000 "motivo dito pela pessoa"');
+      }
+      reprovar.push({ patrimonio, motivo });
+    } else if (argv[i] === '--escolher') {
+      const id = Number(argv[i + 2]);
+      if (!patrimonio || !Number.isInteger(id) || id <= 0) {
+        falhar('uso: --escolher TI-0000 <número da foto no Pixabay>');
+      }
+      escolher.push({ patrimonio, id });
+    } else {
+      falhar(`argumento desconhecido: ${argv[i]}`);
     }
-    reprovar.push({ patrimonio: patrimonio.toUpperCase(), motivo });
     i += 2;
   }
-  return { reprovar };
+  return { reprovar, escolher };
 }
 
 function sha256(buf) {
@@ -66,7 +81,7 @@ function gravarManifesto(m, lista) {
   fs.writeFileSync(MANIFESTO, `${JSON.stringify(m, null, 2)}\n`, 'utf8');
 }
 
-async function buscar(termo, chave) {
+function buscar(termo, chave) {
   const params = {
     q: termo,
     lang: 'en',
@@ -78,6 +93,15 @@ async function buscar(termo, chave) {
     order: 'popular',
     per_page: '50',
   };
+  return consultarApi(params, `busca "${termo}"`, chave);
+}
+
+function buscarPorId(id, chave) {
+  return consultarApi({ id: String(id) }, `foto ${id}`, chave);
+}
+
+async function consultarApi(params, rotulo, chave) {
+  const termo = rotulo;
   // A chave nunca entra no cache nem no nome do arquivo.
   const arquivo = path.join(CACHE, `busca-${sha256(Buffer.from(JSON.stringify(params))).slice(0, 16)}.json`);
   if (fs.existsSync(arquivo)) {
@@ -94,7 +118,7 @@ async function buscar(termo, chave) {
       r = await fetch(`https://pixabay.com/api/?${qs}`);
     } catch (e) {
       // A mensagem não inclui a URL, que tem a chave.
-      throw new Error(`falha de rede na busca "${termo}": ${e.message}`);
+      throw new Error(`falha de rede na ${termo}: ${e.message}`);
     }
     if (r.status === 429) {
       const espera = Number(r.headers.get('x-ratelimit-reset')) || 60;
@@ -103,13 +127,13 @@ async function buscar(termo, chave) {
       continue;
     }
     if (!r.ok) {
-      throw new Error(`Pixabay respondeu ${r.status} na busca "${termo}": ${(await r.text()).slice(0, 200)}`);
+      throw new Error(`Pixabay respondeu ${r.status} na ${termo}: ${(await r.text()).slice(0, 200)}`);
     }
     const resposta = await r.json();
     fs.writeFileSync(arquivo, JSON.stringify({ salvo_em: new Date().toISOString(), params, resposta }, null, 2));
     return { hits: resposta.hits || [], doCache: false };
   }
-  throw new Error(`o limite da API não liberou a busca "${termo}"`);
+  throw new Error(`o limite da API não liberou a ${termo}`);
 }
 
 async function baixar(hit) {
@@ -140,8 +164,10 @@ async function recortar(sharp, origem, destino) {
   }
 }
 
-function itemDoHit(eq, hit, buf, descartes) {
+function itemDoHit(eq, hit, buf, descartes, escolha = 'automática', avisos = []) {
   return {
+    escolha,
+    ...(avisos.length ? { avisos } : {}),
     patrimonio: eq.patrimonio,
     nome: eq.nome,
     busca: eq.busca,
@@ -184,6 +210,8 @@ function gerarRevisao(m, lista) {
   <p>busca: <code>${esc(i.busca)}</code></p>
   <p>tags: ${esc(i.tags)}</p>
   <p>Pixabay <a href="${esc(i.pagina)}" target="_blank" rel="noopener">${esc(i.pixabay_id)}</a> · por <a href="${esc(i.autor_pagina)}" target="_blank" rel="noopener">${esc(i.autor)}</a></p>
+  ${i.escolha === 'pessoa' ? '<p>escolhida pela pessoa, pelo número da foto</p>' : ''}
+  ${(i.avisos || []).map((a) => `<p>aviso: ${esc(a)}</p>`).join('')}
   <p class="st ${esc(i.revisao)}">revisão: ${esc(i.revisao)}</p>
 </article>`;
     })
@@ -236,7 +264,7 @@ ${reprovadas}
 }
 
 async function principal() {
-  const { reprovar } = lerArgs(process.argv.slice(2));
+  const { reprovar, escolher } = lerArgs(process.argv.slice(2));
   const lista = JSON.parse(fs.readFileSync(LISTA, 'utf8'));
   fs.mkdirSync(PRONTAS, { recursive: true });
   fs.mkdirSync(CACHE, { recursive: true });
@@ -278,7 +306,28 @@ async function principal() {
   const idsReprovados = new Set(m.reprovadas.map((r) => Number(r.pixabay_id)));
   const resumo = [];
 
+  for (const { patrimonio, id } of escolher) {
+    const eq = lista.find((e) => e.patrimonio === patrimonio);
+    if (!eq) falhar(`${patrimonio} não está na lista de equipamentos`);
+    const atual = m.itens.find((x) => x.patrimonio === patrimonio);
+    if (atual && atual.pixabay_id) {
+      falhar(`${patrimonio} já tem a foto ${atual.pixabay_id}. Reprove antes (--reprovar), para a troca ficar com motivo.`);
+    }
+    const { hits } = await buscarPorId(id, chave);
+    const hit = hits.find((h) => Number(h.id) === id);
+    if (!hit) falhar(`a foto ${id} não foi encontrada na API do Pixabay`);
+    const idsEmUso = new Set(m.itens.filter((x) => x.pixabay_id).map((x) => Number(x.pixabay_id)));
+    const { problemas, avisos } = sel.validarEscolha(hit, { idsEmUso, idsReprovados });
+    if (problemas.length) falhar(`a foto ${id} não pode ir para ${patrimonio}: ${problemas.join('; ')}`);
+    const destino = path.join(PRONTAS, `${patrimonio}.jpg`);
+    await recortar(sharp, await baixar(hit), destino);
+    m.itens.push(itemDoHit(eq, hit, fs.readFileSync(destino), [], 'pessoa', avisos));
+    resumo.push([patrimonio, id, `escolhida pela pessoa${avisos.length ? ` (aviso: ${avisos.join('; ')})` : ''}`, 'pendente']);
+    gravarManifesto(m, lista);
+  }
+
   for (const eq of lista) {
+    if (escolher.some((e) => e.patrimonio === eq.patrimonio)) continue;
     const atual = m.itens.find((x) => x.patrimonio === eq.patrimonio);
     if (atual && atual.pixabay_id) {
       const arq = path.join(PASTA, atual.arquivo);

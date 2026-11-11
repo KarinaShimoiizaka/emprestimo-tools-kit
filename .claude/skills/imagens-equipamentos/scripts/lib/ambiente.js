@@ -31,7 +31,15 @@ function carregar(caminho, nomes) {
   for (const n of nomes) vars[n] = process.env[n] || doArquivo[n] || '';
   const faltando = nomes.filter((n) => !vars[n]);
   if (faltando.length) {
-    throw new Error(`faltam variáveis: ${faltando.join(', ')} (procuradas no ambiente e em ${caminho})`);
+    // Só nomes, nunca valores (secrets.md permite ler os nomes).
+    const existe = fs.existsSync(caminho);
+    const encontrados = Object.keys(doArquivo);
+    const noArquivo = !existe
+      ? 'o arquivo não existe'
+      : encontrados.length
+        ? `nomes que existem nele: ${encontrados.join(', ')}`
+        : 'o arquivo existe, mas não tem nenhuma variável no formato NOME=valor';
+    throw new Error(`faltam variáveis: ${faltando.join(', ')}. Procuradas no ambiente e em ${caminho}; ${noArquivo}.`);
   }
   return vars;
 }

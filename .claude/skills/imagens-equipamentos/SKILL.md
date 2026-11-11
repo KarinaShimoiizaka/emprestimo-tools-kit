@@ -37,6 +37,13 @@ se mudar, muda lá.
    `npm run imagens:preparar -- --reprovar TI-0005 "pessoa ao fundo"`
    (várias de uma vez repetindo `--reprovar`). Volte ao passo 2 só com as
    trocadas.
+   **Se a pessoa trouxer uma foto do Pixabay** que ela quer usar, peça o link
+   da página (o número fica no fim) e rode, no mesmo comando:
+   `npm run imagens:preparar -- --reprovar TI-0006 "<motivo>" --escolher TI-0006 1282241`
+   A foto vem pela API, como as outras (recorte conferido, crédito certo). O
+   filtro de tags vira aviso no manifesto, porque quem viu a foto foi a
+   pessoa. Arquivo solto, sem o número do Pixabay, não entra: não tem origem
+   nem autor para registrar.
 4. **Publicar: é a pessoa que roda.** Quando ela aprovar as 12, entregue o
    comando para ela rodar no terminal dela:
    `npm run imagens:publicar`
@@ -48,7 +55,8 @@ se mudar, muda lá.
 ## O que o agente não faz
 
 - Rodar o `publicar` ou qualquer coisa que escreva no Supabase.
-- Buscar foto fora do Pixabay, ou baixar foto que não veio do `preparar`.
+- Buscar foto fora do Pixabay, ou usar arquivo que não veio do `preparar`
+  (nem redimensionar uma imagem solta para pôr no lugar de outra).
 - Escolher à mão uma foto que a pessoa não viu na página de revisão.
 - Editar `imagens/manifesto.json` à mão: quem escreve é o script.
 - Ler `.env` ou mostrar chave.

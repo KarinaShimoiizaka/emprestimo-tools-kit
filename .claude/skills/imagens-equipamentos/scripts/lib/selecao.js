@@ -89,6 +89,25 @@ function escolherCandidato(hits, { idsEmUso = new Set(), idsReprovados = new Set
   return { hit: null, descartes };
 }
 
+// Confere uma foto que a pessoa escolheu pelo número, depois de vê-la.
+// Repetida, reprovada, pequena ou que não é foto: bloqueia. Tag proibida:
+// só avisa, porque o filtro de tags é para a escolha automática e quem viu a
+// foto foi a pessoa (ex.: "apple" de maçã).
+function validarEscolha(hit, { idsEmUso = new Set(), idsReprovados = new Set() } = {}) {
+  const problemas = [];
+  const avisos = [];
+  const id = Number(hit.id);
+  if (hit.type && hit.type !== 'photo') problemas.push(`tipo ${hit.type}`);
+  if (idsReprovados.has(id)) problemas.push('foi reprovada antes');
+  if (idsEmUso.has(id)) problemas.push('já usada em outro equipamento');
+  const { largura, altura } = dimensoesDoLarge(hit);
+  if (largura < LARGURA || altura < ALTURA) problemas.push(`pequena (${largura}×${altura})`);
+  if (!hit.largeImageURL) problemas.push('sem largeImageURL');
+  const proibida = tagProibida(hit.tags);
+  if (proibida) avisos.push(`tag "${proibida.tag}" (${proibida.motivo}); escolhida pela pessoa depois de ver a foto`);
+  return { problemas, avisos };
+}
+
 // Confere o manifesto antes de publicar. Devolve a lista de problemas
 // (vazia = pode publicar).
 function validarManifesto(manifesto, patrimoniosEsperados) {
@@ -136,5 +155,6 @@ module.exports = {
   tagProibida,
   dimensoesDoLarge,
   escolherCandidato,
+  validarEscolha,
   validarManifesto,
 };
