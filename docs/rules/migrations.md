@@ -14,9 +14,10 @@ Migrate**, não Flyway. O esquema tem uma fonte de verdade só.
 | `backend/prisma/schema.prisma` | modelo declarativo |
 | `backend/prisma/migrations/` | SQL versionado, uma pasta por migration |
 
-**Estado atual:** o `schema.prisma` tem a tabela `perfil` e o enum `papel`;
-há uma migration, `20261019200000_criar_perfil`. Equipamento e empréstimo
-ainda não existem no esquema.
+**Estado atual:** o `schema.prisma` tem `perfil` e `equipamento`, com os
+enums `papel`, `categoria` e `situacao_fisica`. Há duas migrations,
+`20261019200000_criar_perfil` e `20261111120000_criar_equipamento` (BE-03).
+Empréstimo ainda não existe no esquema.
 
 **Atenção:** o `backend/.env` aponta para o Supabase do deploy. Qualquer
 `prisma migrate` rodado com ele aplica em produção. Por isso o agente não
@@ -95,6 +96,6 @@ schema alterado, o handoff diz qual comando rodar (ver
 
 | # | Questão | Efeito |
 |---|---|---|
-| 1 | Os dados de exemplo do PRD §9 viram seed (`prisma/seed.ts`)? | dá banco local povoado em um comando; é arquivo novo |
+| 1 | Os dados de exemplo do PRD §9 entram no seed? | o seed já existe (`prisma/seed.ts`, BE-03), mas só com os 12 equipamentos da prática; os dados do PRD §9 continuam só no frontend, em memória |
 | 2 | Nome de tabela e coluna em português (`emprestimo`, `devolver_ate`) como a BE-01 já usa, ou em inglês? | a BE-01 assume português; vale confirmar antes da primeira migration |
 | 3 | Quem aplica migration no ambiente hospedado, e quando? | depende do deploy, ainda não decidido |

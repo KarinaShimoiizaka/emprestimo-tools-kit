@@ -137,17 +137,21 @@ caso o custo se mostre maior que o previsto.
 │   ├── package.json             scripts chamam node node_modules/... (ver abaixo)
 │   ├── jest.config.js           Jest + ts-jest
 │   ├── prisma/
-│   │   ├── schema.prisma        perfil + enum papel
-│   │   └── migrations/          20261019200000_criar_perfil
+│   │   ├── schema.prisma        perfil, equipamento e enums
+│   │   ├── migrations/          criar_perfil, criar_equipamento
+│   │   ├── dados/equipamentos.json  os 12 equipamentos da prática, com foto e crédito
+│   │   └── seed.ts              npm run seed (só a pessoa roda em produção)
 │   ├── specs/
 │   │   ├── spec-backend.md       BE-01 · backend
-│   │   └── spec-autenticacao.md  BE-02 · autenticação e identidade
+│   │   ├── spec-autenticacao.md  BE-02 · autenticação e identidade
+│   │   └── spec-dados-iniciais.md BE-03 · dados iniciais
 │   └── src/
 │       ├── main.ts              Nest em :3001 (PORT)
 │       ├── app.module.ts, app.controller.ts   rota GET /
 │       ├── auth/                guards de autenticação e papel, decorators, token Supabase
 │       ├── perfil/              controller, service e testes do perfil
 │       ├── comum/               erros, filtro de exceção, value objects (email, papel)
+│       ├── dados-iniciais/      regra do seed (BE-03), testável sem banco
 │       └── prisma/              PrismaService
 ├── frontend/                    repositório git próprio (front-do-projeto)
 │   ├── DockerFile               alvos `dev` e `runner`
@@ -201,9 +205,9 @@ caso o custo se mostre maior que o previsto.
   do PRD; login com Supabase Auth (FE-03) e middleware que exige sessão.
   Meus empréstimos, Operações e Equipamentos ainda não existem.
 - **Backend:** NestJS com autenticação e identidade (BE-02): valida o token
-  do Supabase, provisiona o perfil e aplica guards de papel. Prisma com uma
-  migration (`criar_perfil`). Equipamentos, empréstimos e RLS ainda não
-  existem.
+  do Supabase, provisiona o perfil e aplica guards de papel. Prisma com
+  `perfil` e `equipamento` (BE-03), e um seed com os 12 equipamentos da
+  prática. Empréstimos e endpoints de equipamento ainda não existem.
 - **Testes:** Jest instalado nas duas pontas; `npm test` roda em cada uma.
 
 Não preencha o que falta por iniciativa própria (ver
