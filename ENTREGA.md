@@ -127,11 +127,8 @@ afirmando uma proteção que o banco não aplica.
   manifesto). A primeira tentativa falhou porque o `SUPABASE_URL` apontava
   para um endereço que não existia no DNS. Depois disso o `publicar` passou a
   dizer a etapa, o servidor e a causa de cada falha de rede.
-- **Mantidas pela pessoa apesar de apontadas pelo agente:** TI-0001 (tela
-  com conteúdo), TI-0005 (código na tela), TI-0011 ("lenovo" legível) e
-  TI-0012 (mãos e texto na tela). Motivo, nas palavras da pessoa: "porque
-  elas estão boas". O desvio do item 2 do contrato é consciente e fica
-  registrado aqui.
+- **Aprovação final:** a pessoa revisou as 12 fotos publicadas e aprovou
+  todas, digitando `APROVO` no `publicar`.
 - **Fotos reprovadas na revisão visual:** 14 no total. A lista completa,
   com o motivo de cada uma, fica em `imagens/manifesto.json`, campo
   `reprovadas`.
@@ -256,7 +253,8 @@ afirmando uma proteção que o banco não aplica.
   4. **A confirmação de que o erro foi desfeito:** o commit back `2fd3577`
      devolve a linha. O service fica idêntico ao de `f26d05a`, e passam 59
      de 59 testes.
-  5. **A rodada depois da correção** (`BE-04_…`, back `db17d5b..2fd3577`):
+  5. **A rodada depois da correção** (`BE-04_2026-11-11_065241_…`, back
+     `db17d5b..2fd3577`):
      **`PRONTA`**, os 9 CAs atendidos, 59 testes passando. O verificador
      confirmou que o `2fd3577` devolve exatamente a linha que o `3334280`
      tinha tirado, e que a ordem das recusas da §3 voltou. Com esse
