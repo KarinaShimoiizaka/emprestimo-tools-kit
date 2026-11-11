@@ -59,10 +59,11 @@ services:
       - "3001:3001"
     volumes:
       - ./backend:/app
-      # Volumes anônimos: o node_modules e o dist do container não são
-      # sobrescritos pelo bind mount da máquina.
+      # Volume anônimo: o node_modules do container não é sobrescrito pelo
+      # bind mount da máquina. O dist/ fica no bind mount (é ignorado pelo
+      # git): num volume próprio ele vira ponto de montagem, e o deleteOutDir
+      # do nest-cli morre com EBUSY ao tentar apagá-lo.
       - /app/node_modules
-      - /app/dist
     depends_on:
       db:
         condition: service_healthy
