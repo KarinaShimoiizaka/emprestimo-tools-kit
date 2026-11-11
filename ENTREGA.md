@@ -8,7 +8,8 @@
 - Repositório da raiz (AGENT.md, docs, subagente, hooks, este arquivo): https://github.com/KarinaShimoiizaka/emprestimo-tools-kit
 - Repositório backend: https://github.com/KarinaShimoiizaka/emprestimo-backend
 - Repositório frontend: https://github.com/KarinaShimoiizaka/front-do-projeto
-- Produção (Vercel): pendente
+- Produção (Vercel), front: https://front-do-projeto.vercel.app
+- Produção (Vercel), backend: *domínio fixo de produção a preencher* (as URLs de deploy, com código no meio, ficam atrás do login da Vercel; ver seção 8)
 
 ## 1. Conflitos: o que foi pedido contra o que já existia
 
@@ -19,9 +20,9 @@
 | Briefing de dados iniciais: "instale a biblioteca sharp" | `restrictions.md`: dependência nova é decisão de arquitetura, vira ADR, e quem instala é a pessoa | Aceitei o sharp só depois do ADR-002; instalado pela pessoa, na raiz, não no backend | O sharp é o que torna o 800×600 garantido (recorta e relê o arquivo); na raiz ele não vai para o deploy | ADR-002; `package.json` da raiz | raiz `f32faf0`, `69630e1` |
 | Briefing de dados iniciais: "TI-0004 e TI-0007 em manutenção; os outros 10 disponíveis" | A lista da prática ("use exatamente esta"), que também marca o TI-0010 como manutenção | Segui a lista: três em manutenção (TI-0004, TI-0007, TI-0010) | A lista é o dado, igual para a turma inteira; o briefing é um pedido e contou errado | BE-03 §3 | back `4db6ec1`, `de4f9ab` |
 | Briefing de dados iniciais: "deixe a senha escrita no próprio arquivo que popula os dados" | Regra da prática ("nenhuma senha em código ou no histórico do git") e `secrets.md` | Recusei. A conta do professor é criada pela pessoa no painel do Supabase, e o seed não cria usuário | A senha do professor não passa por código, arquivo nem git. Criar pelo painel é o que a BE-02 §4 já define | BE-03 §5 | back `4db6ec1` |
-| Briefing de solicitar empréstimo: "quem já tem 5 empréstimos em aberto não pode solicitar outro" | PRD, regra 4: limite de **3** itens (também na BE-01, no trigger previsto, no `dominio.ts` do front e na copy "Limite de 3 itens") | Segui o briefing: limite de 5. **O PRD foi alterado**, com um aviso datado no fim da §7, e o AGENT.md, a BE-01, o `migrations.md` e o `tests.md` acompanharam | Decisão da pessoa: fazer o que a atividade pede. Como regra de negócio vem do PRD, o PRD mudou primeiro, para as duas fontes não se contradizerem | `docs/prd.md` §7; `AGENT.md` §2 | pendente |
-| Briefing de solicitar empréstimo: "devolução prevista para 14 dias úteis depois" | PRD, regra 1: "devolver até = hoje + 14" (dias corridos) | Segui o briefing: 14 dias **úteis**, e o PRD foi alterado do mesmo jeito | Mesma decisão da pessoa. O que conta como dia útil está na seção 1b | `docs/prd.md` §7; `AGENT.md` §2 | pendente |
-| Briefing de solicitar empréstimo: "o catálogo deve ser limpo: sem rodapé nem texto de crédito" | Contrato da skill, item 9: a tela que exibe as fotos mostra o crédito com link, "exigência das diretrizes da API" | Catálogo **sem** crédito. O crédito de cada foto continua registrado no banco (`imagem_autor`, `imagem_origem`, `imagem_licenca`) e no manifesto | Decisão da pessoa. A justificativa do item 9 era a diretriz do Pexels; o Pixabay só pede a origem quando se exibem resultados de busca, o que o catálogo não faz, e a licença dele não exige atribuição | `references/contrato.md` da skill, item 9; FE-04 | pendente |
+| Briefing de solicitar empréstimo: "quem já tem 5 empréstimos em aberto não pode solicitar outro" | PRD, regra 4: limite de **3** itens (também na BE-01, no trigger previsto, no `dominio.ts` do front e na copy "Limite de 3 itens") | Segui o briefing: limite de 5. **O PRD foi alterado**, com um aviso datado no fim da §7, e o AGENT.md, a BE-01, o `migrations.md` e o `tests.md` acompanharam | Decisão da pessoa: fazer o que a atividade pede. Como regra de negócio vem do PRD, o PRD mudou primeiro, para as duas fontes não se contradizerem | `docs/prd.md` §7; `AGENT.md` §2 | raiz `7ca011e`, `5486b82`; back `db17d5b`, `f48f569`; front `d25ebbc`, `8989bd4` |
+| Briefing de solicitar empréstimo: "devolução prevista para 14 dias úteis depois" | PRD, regra 1: "devolver até = hoje + 14" (dias corridos) | Segui o briefing: 14 dias **úteis**, e o PRD foi alterado do mesmo jeito | Mesma decisão da pessoa. O que conta como dia útil está na seção 1b | `docs/prd.md` §7; `AGENT.md` §2 | raiz `7ca011e`, `5486b82`; back `db17d5b`, `f48f569`; front `d25ebbc`, `8989bd4` |
+| Briefing de solicitar empréstimo: "o catálogo deve ser limpo: sem rodapé nem texto de crédito" | Contrato da skill, item 9: a tela que exibe as fotos mostra o crédito com link, "exigência das diretrizes da API" | Catálogo **sem** crédito. O crédito de cada foto continua registrado no banco (`imagem_autor`, `imagem_origem`, `imagem_licenca`) e no manifesto | Decisão da pessoa. A justificativa do item 9 era a diretriz do Pexels; o Pixabay só pede a origem quando se exibem resultados de busca, o que o catálogo não faz, e a licença dele não exige atribuição | `references/contrato.md` da skill, item 9; FE-04 | raiz `7ca011e`; front `d25ebbc`, `8989bd4` |
 | Skill com `SKILL.md`, `references/` e scripts, como a prática pede | `docs/rules/skill.md`: "uma skill por arquivo", em `docs/skill/` | A skill mora em `.claude/skills/imagens-equipamentos/` | Uma skill com referências e scripts não cabe num arquivo, e o Claude Code só descobre sozinho as de `.claude/skills/` | `docs/rules/skill.md` (decisão em aberto 1 resolvida) | raiz `69424a5` |
 
 ## 1b. Lacunas: o que foi pedido de forma incompleta
@@ -45,23 +46,24 @@
 | BE-03 | Papel do professor | (a) `colaborador`; (b) `operacoes`, que inclui o que o colaborador faz; (c) duas contas, uma de cada | (a), decisão da pessoa | As telas de Operações não existem e estão fora de escopo na fase 4; com `operacoes`, a navegação mostraria abas que não levam a lugar nenhum. (c) não é possível com o mesmo e-mail | back `4db6ec1` |
 | BE-03 | O que guardar da foto no banco | (a) a URL pública completa; (b) o caminho no bucket, mais o crédito (autor, página, licença) | (b), decisão da pessoa | O endereço do projeto no Supabase já mudou uma vez; o caminho continua valendo. O crédito no banco deixa a fase 4 livre para mostrar ou não | back `4db6ec1`, `e611274` |
 | BE-03 | O que o seed faz ao rodar de novo | (a) atualiza os 12 para o que está no arquivo, inclusive a situação; (b) só cria o que falta | (a), decisão da pessoa | Nesta fase ninguém altera equipamento pela interface; o arquivo é a fonte | back `4db6ec1`, `de4f9ab` |
-| BE-04 | O que é "dia útil" no prazo de 14 dias úteis | (a) segunda a sexta, sem feriados; (b) com feriados nacionais, o que pede um calendário | (a), proposta do agente, confirmada pela pessoa | O briefing não define. Feriado pede uma fonte de calendário e manutenção anual, e a regra fica testável com datas fixas | pendente |
-| BE-04 | Autorização: RLS com efeito real ou só no backend | (a) guards + consultas filtradas pela pessoa do token, com RLS ligado sem política; (b) RLS de verdade: usuário de banco sem bypass, contexto por transação e políticas testadas | (a), decisão da pessoa, registrada no [ADR-003](docs/adrs/adr-003-autorizacao-no-backend.md) | O backend conecta como dono das tabelas, e políticas nunca seriam avaliadas. O ADR-001 já previa essa saída. (b) exige credencial nova em produção e banco de teste, que o projeto não tem | pendente |
+| BE-04 | O que é "dia útil" no prazo de 14 dias úteis | (a) segunda a sexta, sem feriados; (b) com feriados nacionais, o que pede um calendário | (a), proposta do agente, confirmada pela pessoa | O briefing não define. Feriado pede uma fonte de calendário e manutenção anual, e a regra fica testável com datas fixas | raiz `7ca011e`; back `db17d5b`, `f48f569`; front `8989bd4` |
+| BE-04 | Autorização: RLS com efeito real ou só no backend | (a) guards + consultas filtradas pela pessoa do token, com RLS ligado sem política; (b) RLS de verdade: usuário de banco sem bypass, contexto por transação e políticas testadas | (a), decisão da pessoa, registrada no [ADR-003](docs/adrs/adr-003-autorizacao-no-backend.md) | O backend conecta como dono das tabelas, e políticas nunca seriam avaliadas. O ADR-001 já previa essa saída. (b) exige credencial nova em produção e banco de teste, que o projeto não tem | raiz `7ca011e`; back `db17d5b`, `f48f569` |
 | BE-04 | Como provar que o verificador reprova (Entrega 1, "Provado") | (a) erro plantado num projeto de teste à parte; (b) erro plantado na própria BE-04 já `PRONTA`, com um commit do erro e um da correção | (b), decisão da pessoa | Prova no código que vai para a entrega, com os dois commits que o enunciado pede, e a trava do status vista bloqueando de verdade | pendente |
-| skill | Linguagem e testes dos scripts da raiz | (a) TypeScript e Jest, como no ADR-001; (b) JavaScript e `node --test` | (b), *a confirmar pela pessoa* (seção 2) | Roda com `node` direto, sem build, como os hooks; não traz o Jest só para testar a escolha de foto | raiz `f32faf0`, `69630e1` |
+| skill | Linguagem e testes dos scripts da raiz | (a) TypeScript e Jest, como no ADR-001; (b) JavaScript e `node --test` | (b), proposta do agente, confirmada pela pessoa (seção 2) | Roda com `node` direto, sem build, como os hooks; não traz o Jest só para testar a escolha de foto | raiz `f32faf0`, `69630e1` |
 
 ## 2. Onde o agente tentou decidir por você
 
 - **Status das specs existentes.** Ao padronizar os status, o agente marcou
   como `aprovada` as specs cujo código já existia (BE-02, FE-01, FE-02,
   FE-03), inferindo a aprovação a partir da implementação. Isso não estava
-  escrito em lugar nenhum. *A confirmar pela pessoa: quais dessas foram, de
-  fato, aprovadas.*
+  escrito em lugar nenhum. A pessoa confirmou depois que as quatro foram, de
+  fato, aprovadas por ela. O agente acertou, mas decidiu sem perguntar.
 - **Motivo das fotos reprovadas.** O `revisao.md` diz que o motivo
   registrado é o que a pessoa disse. Na prática, a pessoa escolheu quais
   reprovar (apagando o arquivo ou dizendo o número), e o agente escreveu o
   motivo a partir do que ele mesmo viu na foto. Os motivos estão em
-  `imagens/manifesto.json`, campo `reprovadas`. *A confirmar pela pessoa.*
+  `imagens/manifesto.json`, campo `reprovadas`. A pessoa revisou os motivos
+  depois e os manteve.
 - **Onde o front busca os dados.** A FE-01 §4 sugeria buscar no servidor do
   Next. Ao implementar a FE-04, o agente buscou no navegador, sem perguntar:
   o token já está no cliente do Supabase do navegador, e no Docker local o
@@ -69,8 +71,7 @@
   FE-04 §2. *A confirmar pela pessoa.*
 - **Linguagem e testes dos scripts da skill.** O ADR-001 fixa TypeScript e
   Jest. Ao escrever a skill, o agente usou JavaScript e o test runner do Node
-  sem perguntar, e registrou o desvio no ADR-002. *A confirmar pela pessoa.*
-
+  sem perguntar, e registrou o desvio no ADR-002. A pessoa confirmou depois.
 - **O que é "dia útil".** O briefing não define. O agente escreveu
   "segunda a sexta, feriados não contam na v1" no PRD e na BE-01 para
   conseguir seguir, e só depois perguntou. Percebido porque a definição
@@ -87,6 +88,12 @@ backend no lugar da raiz). A decisão também muda o que vai para o deploy
 (nada da skill vai) e desvia de duas fontes que alguém vai ler depois: o
 enunciado e o ADR-001. Sem o ADR, quem chegasse veria um `package.json` na
 raiz e um "Pixabay" onde o contrato diz "Pexels", sem o motivo.
+
+Uma segunda decisão também virou ADR, porque desfaz parte de um ADR aceito:
+o [ADR-003](docs/adrs/adr-003-autorizacao-no-backend.md) tira a autorização
+do RLS e a põe nos guards e no service. O ADR-001 já previa essa saída "se o
+custo se mostrar maior", e mudar isso sem registro deixaria o ADR-001
+afirmando uma proteção que o banco não aplica.
 
 ## 4. A skill imagens-equipamentos
 
@@ -190,8 +197,19 @@ raiz e um "Pixabay" onde o contrato diz "Pexels", sem o motivo.
     deixou a spec passar a `pronta`. As duas rodadas podem ser comparadas lado
     a lado: a diferença está no CA-3 a CA-5, que ganharam a evidência da
     linha 102.
-- **Prova com erro plantado:** pendente. Adiada por decisão da pessoa;
-  sugestão: fazer sobre a spec de solicitar empréstimo (fase 4).
+  - **BE-04, rodada 1** (`BE-04_2026-11-11_063134_…`, back `db17d5b..f48f569`):
+    `PRONTA`, os 9 CAs atendidos, build e 59 testes passando, working tree
+    limpa. Duas observações fora dos CAs, que não bloquearam:
+    - nenhum teste cobre um item em manutenção que também tenha empréstimo
+      aberto (o código dá prioridade à manutenção, como a §3 pede);
+    - `equipamentoId` que não é UUID recebe 400 do validador, não 404; a §3
+      não trata esse caso.
+
+    Duas rodadas anteriores da BE-04 e da FE-04 foram interrompidas porque a
+    sessão do Claude Code reiniciou no meio; nenhuma chegou a gravar
+    registro.
+- **Prova com erro plantado:** sobre a BE-04, depois do primeiro `PRONTA`
+  (plano na seção 1b). *Em andamento.*
 - **Tabelas finais das duas specs:**
   - **BE-03:** rodada 2, `docs/verificacoes/BE-03_2026-11-11_050448_…`
     (raiz `0de4b7a`). Código em back `4db6ec1`, `e611274` e `de4f9ab`.
@@ -230,6 +248,16 @@ mesma já listava o lugar como decisão em aberto 1. A regra agora aceita
 `.claude/skills/<nome>/`, e a `solid` fica onde está até alguém pedir para
 mover.
 
+**`permissions.deny`: `Bash(npm run prisma *)`.** Escrita na fase 1 para
+impedir o agente de rodar `prisma migrate`. Na fase 3 ela barrou também o
+`prisma generate` e o `prisma validate`, que o `migrations.md` permite ao
+agente porque não tocam no banco. A tentativa de chamar o Prisma por outro
+caminho foi recusada pelo classificador do Claude Code, por contornar a
+regra, e com razão. Resultado: a pessoa passou a rodar o `generate`. A regra
+garantia mais do que a regra de projeto pedia. A versão certa bloquearia só
+`migrate` e `db`, como o `guarda-comandos.js` já faz. *Não alterada: fica
+registrada como regra larga demais.*
+
 ## 8. O que ficou de fora e o que faria diferente
 - **Prova com erro plantado:** pendente (seção 6).
 - **BE-01, BE-02 e FE-01 não têm "Critérios de aceite":** o verificador dá
@@ -240,5 +268,23 @@ mover.
   BE-03; a trava deixou a BE-03 passar a `pronta` só depois da rodada 2.
   Falta vê-la **bloquear** de verdade, o que a prova com erro plantado
   (fase 4) vai mostrar.
-- **Crédito das fotos na tela:** fica para a fase 4, junto com o conflito do
-  briefing que pede o catálogo sem crédito.
+- **Crédito das fotos na tela:** decidido na fase 4: o catálogo fica sem
+  crédito, e o item 9 do contrato da skill não é cumprido, por decisão da
+  pessoa (seção 1).
+- **Infra antiga quebrada, encontrada ao subir no Docker:** o `npm ci` do
+  backend falhava porque o `postinstall` (`prisma generate`) rodava antes do
+  schema ser copiado, e o `dist/` num volume próprio fazia o Nest morrer com
+  `EBUSY`. Os dois foram corrigidos (back `f5c2339`, raiz `5eb953b`). Faria
+  diferente: subir o compose a cada fase, e não só no fim.
+- **A skill não teve spec no formato BE/FE.** A regra da prática é que toda
+  funcionalidade passa pelo ciclo de SDD. Para a skill, o papel de spec
+  ficou com o contrato do enunciado, transcrito item por item, e com como
+  cada item é garantido, em `references/contrato.md`, mais o ADR-002. Faria
+  diferente: escrever o contrato como spec da raiz, com critérios de aceite,
+  para o verificador poder conferir a skill como confere as outras.
+- **Backend na Vercel:** as URLs de deploy (com código no meio) ficam atrás
+  do login da Vercel ("Vercel Authentication"), e o front não conseguia
+  chamar o backend. A saída é usar o domínio fixo de produção e desligar a
+  proteção no projeto do backend. As rotas de empréstimo continuam exigindo o
+  token do Supabase, e o `FRONTEND_URL` precisa estar sem `/` no fim, senão o
+  CORS barra o front.

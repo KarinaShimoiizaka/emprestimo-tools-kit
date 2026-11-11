@@ -142,7 +142,7 @@ caso o custo se mostre maior que o previsto.
 │   ├── jest.config.js           Jest + ts-jest
 │   ├── prisma/
 │   │   ├── schema.prisma        perfil, equipamento e enums
-│   │   ├── migrations/          criar_perfil, criar_equipamento
+│   │   ├── migrations/          criar_perfil, criar_equipamento, criar_emprestimo
 │   │   ├── dados/equipamentos.json  os 12 equipamentos da prática, com foto e crédito
 │   │   └── seed.ts              npm run seed (só a pessoa roda em produção)
 │   ├── specs/
@@ -233,9 +233,17 @@ cd backend && npm install && npm run start:dev     # :3001
 # em container: banco + frontend
 docker compose up
 
-# banco + backend + frontend
-docker compose --profile backend up
+# banco + backend + frontend, tudo local
+docker compose --profile backend up -d --build
+# na primeira vez, o Postgres do Docker vem vazio (quem roda é a pessoa:
+# migration é sempre dela, mesmo no banco local)
+docker compose --profile backend exec backend npm run prisma -- migrate deploy
+docker compose --profile backend exec backend npm run seed
 ```
+
+No compose, o backend usa o Postgres do Docker, não o Supabase: o
+`docker-compose.yml` sobrescreve `DATABASE_URL`, `DIRECT_URL` e
+`FRONTEND_URL`. O login continua sendo o do Supabase de verdade.
 
 Observações:
 

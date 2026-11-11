@@ -1,6 +1,9 @@
 # ADR-001 — Stack do projeto
 
-**Status:** aceito
+**Status:** aceito. A linha "autorização = RLS" foi substituída pelo
+[ADR-003](adr-003-autorizacao-no-backend.md) em 11/11/2026; o resto vale.
+O contexto abaixo cita "3 itens, 14 dias", regras da época: o PRD passou a
+5 itens e 14 dias úteis (PRD §7).
 
 **Contexto do produto:** [docs/prd.md](../prd.md)
 

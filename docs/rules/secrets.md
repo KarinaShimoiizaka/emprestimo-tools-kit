@@ -59,9 +59,11 @@ escrito em código ou em documentação.
 5. **`SUPABASE_SECRET_KEY` fica só no backend**, e só no código que
    realmente precisa ignorar RLS. Na v1 não há nenhum caso assim; se surgir,
    ele entra em spec antes.
-6. **`DATABASE_URL` aponta para o usuário sem bypass de RLS;** `DIRECT_URL`
-   é a do Prisma Migrate. Trocar uma pela outra para "fazer funcionar" desliga
-   a autorização em silêncio (ADR-001, nota sobre RLS).
+6. **`DATABASE_URL` é a conexão da aplicação (pooler, porta 6543);
+   `DIRECT_URL` é a do Prisma Migrate (porta 5432).** O ADR-001 previa um
+   usuário sem bypass de RLS na `DATABASE_URL`; pelo
+   [ADR-003](../adrs/adr-003-autorizacao-no-backend.md), a autorização ficou no
+   backend, e as duas usam hoje o mesmo usuário do Supabase.
 7. **A senha padrão do Compose (`emprestimo`) é só para o Postgres local.**
    Nenhum ambiente fora da máquina de desenvolvimento usa esse valor.
 8. **Nada de segredo em log.** Erro de conexão loga o host, não a URL
@@ -102,7 +104,14 @@ Commitado, colado no chat, impresso em log, enviado para fora — tudo conta.
 | # | Questão | Efeito |
 |---|---|---|
 | 1 | Cria-se um `.env.example` por ponta, com os nomes e sem valores? | documenta a configuração sem abrir o `.env`; é arquivo novo, então só com pedido |
-| 2 | Onde ficam os segredos do ambiente hospedado? | o frontend vai para a Vercel; onde o backend roda ainda não foi decidido |
+| 3 | `FRONTEND_URL` (CORS do backend) entra nesta tabela de classificação? | é configuração pública; sem `/` no fim, senão o CORS barra o front |
+
+> **Decidido na fase 4:** front e back rodam na Vercel, e os segredos do
+> ambiente hospedado ficam nas variáveis de cada projeto lá, nunca no
+> repositório (era a decisão em aberto 2). No front, só `NEXT_PUBLIC_*`.
+> No backend, só o que o código lê: `DATABASE_URL`, `DIRECT_URL`,
+> `SUPABASE_URL`, `SUPABASE_JWKS_URL`, `STORAGE_NAME` e `FRONTEND_URL`. A
+> `SUPABASE_SECRET_KEY` não precisa ir para lá: o backend não a usa.
 
 > **Decidido pela FE-03:** o frontend fala direto com o Supabase Auth
 > (`frontend/src/lib/supabase/`), com `NEXT_PUBLIC_SUPABASE_URL` e

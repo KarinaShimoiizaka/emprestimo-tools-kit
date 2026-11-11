@@ -14,10 +14,12 @@ Migrate**, não Flyway. O esquema tem uma fonte de verdade só.
 | `backend/prisma/schema.prisma` | modelo declarativo |
 | `backend/prisma/migrations/` | SQL versionado, uma pasta por migration |
 
-**Estado atual:** o `schema.prisma` tem `perfil` e `equipamento`, com os
-enums `papel`, `categoria` e `situacao_fisica`. Há duas migrations,
-`20261019200000_criar_perfil` e `20261111120000_criar_equipamento` (BE-03).
-Empréstimo ainda não existe no esquema.
+**Estado atual:** o `schema.prisma` tem `perfil`, `equipamento` e
+`emprestimo`, com os enums `papel`, `categoria` e `situacao_fisica`. Há três
+migrations: `20261019200000_criar_perfil`,
+`20261111120000_criar_equipamento` (BE-03) e
+`20261111130000_criar_emprestimo` (BE-04, com o índice único parcial, o check
+de prazo e o trigger de manutenção e limite).
 
 **Atenção:** o `backend/.env` aponta para o Supabase do deploy. Qualquer
 `prisma migrate` rodado com ele aplica em produção. Por isso o agente não
@@ -32,7 +34,10 @@ Tudo que define o banco, não só as tabelas:
 - constraints e índices parciais (`emprestimo_aberto_unico`,
   `prazo_coerente` — BE-01 §3);
 - triggers (limite de 5 por pessoa, trava de manutenção);
-- **políticas de RLS**, `grant`s e o usuário da aplicação sem bypass.
+- **RLS ligado** em toda tabela. Pelo [ADR-003](../adrs/adr-003-autorizacao-no-backend.md),
+  sem política: ele só fecha a API pública do Supabase, e a autorização é do
+  backend. Política, `grant` e usuário sem bypass voltam a entrar aqui se um
+  ADR novo trouxer o RLS com efeito real.
 
 O que o `schema.prisma` não expressa (trigger, política, índice parcial,
 `grant`) é escrito à mão no `migration.sql`, gerado com `--create-only` e

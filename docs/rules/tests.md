@@ -8,8 +8,11 @@ não Vitest. No frontend, componentes usam Testing Library (FE-01 §9).
 **Estado atual:** Jest instalado nas duas pontas. No backend, com
 `ts-jest`; no frontend, com `jest-environment-jsdom` e Testing Library.
 `npm test` roda em cada uma. Já há testes em `backend/src/auth/`,
-`backend/src/perfil/`, `backend/src/comum/valores/`, `frontend/src/lib/` e
-`frontend/src/app/login/`.
+`backend/src/perfil/`, `backend/src/comum/valores/`,
+`backend/src/dados-iniciais/` (BE-03), `backend/src/emprestimos/` (BE-04),
+`frontend/src/lib/`, `frontend/src/components/` e `frontend/src/app/`
+(login, catálogo e Meus empréstimos, FE-03 e FE-04). Os testes citam o CA no
+nome (ex.: `BE-04 CA-5`).
 
 **Na raiz** (ferramentas, sem código de produto), os testes usam o test
 runner do próprio Node (`node --test`) e não o Jest, para não trazer uma
@@ -28,12 +31,15 @@ abre conexão de verdade com o banco não roda com esse `.env` (regra 7).
 |---|---|---|---|
 | 1 | backend | unitário | service de empréstimos: cada regra de negócio, com o caso que passa e o que falha |
 | 2 | backend | integração, banco real | índice único barra o segundo empréstimo do mesmo item; trigger barra o sexto item da mesma pessoa |
-| 3 | backend | integração, banco real | **RLS ligado**: conectado como o usuário da aplicação, `select` sem contexto não devolve nada |
+| 3 | backend | integração, banco real | **RLS ligado sem política**: pela API pública do Supabase (chave publishable), nenhuma tabela é lida nem escrita ([ADR-003](../adrs/adr-003-autorizacao-no-backend.md)) |
 | 4 | frontend | unitário | `src/lib/dominio.ts` inteiro |
 | 5 | frontend | componente | card em cada situação; modal de solicitar |
 
-O teste 3 é o que impede o modo de falha silencioso do ADR-001: política que
-existe mas nunca é avaliada. Ele não é opcional.
+Com o ADR-003, quem filtra "cada um vê os seus" é o backend, e o teste disso
+é unitário (BE-04 CA-8). O RLS ficou só para fechar a API pública, e o teste
+3 confere isso. **Os testes 2 e 3 ainda não existem:** dependem do banco de
+teste (decisão em aberto 1); até lá, essas garantias só são conferidas em
+produção (BE-04 §8, decisão em aberto 2).
 
 **Fora da v1:** ponta a ponta automatizado (navegador em CI). O fluxo
 login → solicitar → devolver é conferido à mão.
