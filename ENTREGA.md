@@ -1,15 +1,13 @@
 # Entrega da prática
 
-> Documento em construção, preenchido a cada fase. **Fase atual: 4 (solicitar
-> empréstimo).** Nas colunas "commit", "raiz" é o repositório
+> Preenchido a cada fase e fechado na tag `entrega-pratica`. Nas colunas "commit", "raiz" é o repositório
 > emprestimo-tools-kit; "back" e "front", os outros dois.
 
 ## Links
 - Repositório da raiz (AGENT.md, docs, subagente, hooks, este arquivo): https://github.com/KarinaShimoiizaka/emprestimo-tools-kit
 - Repositório backend: https://github.com/KarinaShimoiizaka/emprestimo-backend
 - Repositório frontend: https://github.com/KarinaShimoiizaka/front-do-projeto
-- Produção (Vercel), front: https://front-do-projeto.vercel.app
-- Produção (Vercel), backend: *domínio fixo de produção a preencher* (as URLs de deploy, com código no meio, ficam atrás do login da Vercel; ver seção 8)
+- Produção (Vercel): https://front-do-projeto.vercel.app (o front chama o backend pelo domínio de produção configurado no projeto da Vercel; ver seção 8)
 
 ## 1. Conflitos: o que foi pedido contra o que já existia
 
@@ -48,7 +46,7 @@
 | BE-03 | O que o seed faz ao rodar de novo | (a) atualiza os 12 para o que está no arquivo, inclusive a situação; (b) só cria o que falta | (a), decisão da pessoa | Nesta fase ninguém altera equipamento pela interface; o arquivo é a fonte | back `4db6ec1`, `de4f9ab` |
 | BE-04 | O que é "dia útil" no prazo de 14 dias úteis | (a) segunda a sexta, sem feriados; (b) com feriados nacionais, o que pede um calendário | (a), proposta do agente, confirmada pela pessoa | O briefing não define. Feriado pede uma fonte de calendário e manutenção anual, e a regra fica testável com datas fixas | raiz `7ca011e`; back `db17d5b`, `f48f569`; front `8989bd4` |
 | BE-04 | Autorização: RLS com efeito real ou só no backend | (a) guards + consultas filtradas pela pessoa do token, com RLS ligado sem política; (b) RLS de verdade: usuário de banco sem bypass, contexto por transação e políticas testadas | (a), decisão da pessoa, registrada no [ADR-003](docs/adrs/adr-003-autorizacao-no-backend.md) | O backend conecta como dono das tabelas, e políticas nunca seriam avaliadas. O ADR-001 já previa essa saída. (b) exige credencial nova em produção e banco de teste, que o projeto não tem | raiz `7ca011e`; back `db17d5b`, `f48f569` |
-| BE-04 | Como provar que o verificador reprova (Entrega 1, "Provado") | (a) erro plantado num projeto de teste à parte; (b) erro plantado na própria BE-04 já `PRONTA`, com um commit do erro e um da correção | (b), decisão da pessoa | Prova no código que vai para a entrega, com os dois commits que o enunciado pede, e a trava do status vista bloqueando de verdade | pendente |
+| BE-04 | Como provar que o verificador reprova (Entrega 1, "Provado") | (a) erro plantado num projeto de teste à parte; (b) erro plantado na própria BE-04 já `PRONTA`, com um commit do erro e um da correção | (b), decisão da pessoa | Prova no código que vai para a entrega, com os dois commits que o enunciado pede, e a trava do status vista bloqueando de verdade | back `3334280`, `2fd3577` |
 | skill | Linguagem e testes dos scripts da raiz | (a) TypeScript e Jest, como no ADR-001; (b) JavaScript e `node --test` | (b), proposta do agente, confirmada pela pessoa (seção 2) | Roda com `node` direto, sem build, como os hooks; não traz o Jest só para testar a escolha de foto | raiz `f32faf0`, `69630e1` |
 
 ## 2. Onde o agente tentou decidir por você
@@ -68,7 +66,7 @@
   Next. Ao implementar a FE-04, o agente buscou no navegador, sem perguntar:
   o token já está no cliente do Supabase do navegador, e no Docker local o
   servidor do Next não alcança o backend por `localhost`. Registrado na
-  FE-04 §2. *A confirmar pela pessoa.*
+  FE-04 §2. A pessoa confirmou depois.
 - **Linguagem e testes dos scripts da skill.** O ADR-001 fixa TypeScript e
   Jest. Ao escrever a skill, o agente usou JavaScript e o test runner do Node
   sem perguntar, e registrou o desvio no ADR-002. A pessoa confirmou depois.
@@ -208,12 +206,72 @@ afirmando uma proteção que o banco não aplica.
     Duas rodadas anteriores da BE-04 e da FE-04 foram interrompidas porque a
     sessão do Claude Code reiniciou no meio; nenhuma chegou a gravar
     registro.
-- **Prova com erro plantado:** sobre a BE-04, depois do primeiro `PRONTA`
-  (plano na seção 1b). *Em andamento.*
+  - **FE-04, rodada 1** (front `d25ebbc..675fe55`): **`NÃO PRONTA`**.
+    - **CA:** FE-04 CA-5, REPROVADO. Os outros 9 foram atendidos, e build e
+      43 testes passaram.
+    - **Causa:** o CA diz que o toast mostra a data que o servidor devolveu.
+      No teste, o servidor falso devolvia a mesma data que o front calcula
+      para o modal (27/11), então um código que usasse a data local por
+      engano também passaria. O código estava certo, mas o teste não provava
+      o CA.
+    - **Correção:** o servidor falso passou a devolver uma data diferente
+      (30/11), e o teste confere 27/11 no modal e 30/11 no toast, e que o
+      toast não mostra 27/11.
+    - Duas observações fora dos CAs, que não bloquearam:
+      - nenhum teste cobre a leitura do token na sessão real do Supabase;
+      - uma categoria desconhecida vira "Acessório" sem aviso.
+
+    Este erro não foi plantado: o verificador achou sozinho.
+  - **FE-04, rodada 2** (front `d25ebbc..f3dfed2`): `PRONTA`, os 10 CAs
+    atendidos. O CA-5 agora traz a evidência da data do servidor (30/11) no
+    toast, diferente da do modal (27/11). Build e 43 testes passaram. Duas
+    ressalvas, que não bloquearam:
+    - o teste do CA-9 confere o "5" por trecho de texto ("15" também
+      passaria; o código tem "5" exato);
+    - a leitura do token por `getSession()` não tem teste.
+
+    Com esse veredito, a trava deixou a FE-04 passar a `pronta`.
+- **Prova com erro plantado** (sobre a BE-04, depois do primeiro `PRONTA`;
+  plano na seção 1b):
+  1. **O que foi plantado:** o commit back `3334280` apaga do service a
+     checagem que recusa equipamento em manutenção (regra do BE-04 CA-3). O
+     verificador recebeu só a spec e o intervalo de commits, sem saber do
+     erro.
+  2. **A tabela que voltou** (`BE-04_2026-11-11_064553_…`): **`NÃO PRONTA`**.
+     - **BE-04 CA-3, REPROVADO.** Apontou a linha exata que o `3334280`
+       apagou e a saída do Jest ("Received promise resolved instead of
+       rejected"): o service criou empréstimo de item em manutenção.
+     - `npm test` falhou: 58 de 59 testes passaram.
+     - Os outros 8 CAs foram atendidos.
+     - Ele também notou que, sem essa checagem, a ordem das recusas da §3 se
+       perde: um item em manutenção pedido por quem tem atraso receberia
+       "atraso", e não "manutenção".
+  3. **A trava bloqueando de verdade:** com o código mudado, a BE-04 voltou
+     a `aprovada`. A tentativa de marcá-la `pronta` de novo foi recusada pelo
+     hook, com esta mensagem:
+     `[exige-verificacao] a rodada mais recente de BE-04
+     (docs/verificacoes/BE-04_2026-11-11_064553_a8a59dee1cfe.md) não tem
+     "Veredito: PRONTA". Corrija o que ela apontou e chame o verificador de
+     novo (spec-flow, regra 5).`
+  4. **A confirmação de que o erro foi desfeito:** o commit back `2fd3577`
+     devolve a linha. O service fica idêntico ao de `f26d05a`, e passam 59
+     de 59 testes.
+  5. **A rodada depois da correção** (`BE-04_…`, back `db17d5b..2fd3577`):
+     **`PRONTA`**, os 9 CAs atendidos, 59 testes passando. O verificador
+     confirmou que o `2fd3577` devolve exatamente a linha que o `3334280`
+     tinha tirado, e que a ordem das recusas da §3 voltou. Com esse
+     veredito, a trava liberou a BE-04 para `pronta` de novo.
+  - **Os dois commits:** back `3334280` (erro) e `2fd3577` (correção). O
+    erro nunca foi para produção: os dois foram enviados juntos, e a Vercel
+    só publica o último.
 - **Tabelas finais das duas specs:**
   - **BE-03:** rodada 2, `docs/verificacoes/BE-03_2026-11-11_050448_…`
     (raiz `0de4b7a`). Código em back `4db6ec1`, `e611274` e `de4f9ab`.
-  - **Solicitar empréstimo:** fase 4.
+  - **Solicitar empréstimo, BE-04:** a rodada depois da correção do erro
+    plantado (`PRONTA`; item 5 acima). Antes da prova, a rodada
+    `BE-04_2026-11-11_063134_…` também tinha dado `PRONTA`.
+  - **Solicitar empréstimo, FE-04:** rodada `FE-04_2026-11-11_065037_…`
+    (`PRONTA`).
 - **Conferência da BE-03 em produção** (§8 da spec), feita pela pessoa:
   - conta do professor criada no painel, com nome e papel gravados por SQL;
   - login funcionando no link da Vercel;
@@ -259,15 +317,14 @@ garantia mais do que a regra de projeto pedia. A versão certa bloquearia só
 registrada como regra larga demais.*
 
 ## 8. O que ficou de fora e o que faria diferente
-- **Prova com erro plantado:** pendente (seção 6).
 - **BE-01, BE-02 e FE-01 não têm "Critérios de aceite":** o verificador dá
   `NÃO PRONTA` para elas até que ganhem a seção (`spec-flow.md`, decisão em
   aberto 2).
 - **Hooks numa sessão real:** o `guarda-comandos` já bloqueou comando de
-  verdade dentro do Claude Code; o registro gravou sozinho as duas rodadas da
-  BE-03; a trava deixou a BE-03 passar a `pronta` só depois da rodada 2.
-  Falta vê-la **bloquear** de verdade, o que a prova com erro plantado
-  (fase 4) vai mostrar.
+  verdade dentro do Claude Code; o registro gravou sozinho todas as rodadas;
+  e a trava foi vista nos dois sentidos: liberou a BE-03 e a BE-04 depois de
+  `PRONTA`, e **bloqueou** a BE-04 depois da rodada reprovada da prova
+  (seção 6).
 - **Crédito das fotos na tela:** decidido na fase 4: o catálogo fica sem
   crédito, e o item 9 do contrato da skill não é cumprido, por decisão da
   pessoa (seção 1).
