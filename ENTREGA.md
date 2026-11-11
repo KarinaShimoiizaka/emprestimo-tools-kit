@@ -1,7 +1,7 @@
 # Entrega da prática
 
-> Documento em construção, preenchido a cada fase. **Fase atual: 2 (skill
-> imagens-equipamentos).** Nas colunas "commit", "raiz" é o repositório
+> Documento em construção, preenchido a cada fase. **Fase atual: 4 (solicitar
+> empréstimo).** Nas colunas "commit", "raiz" é o repositório
 > emprestimo-tools-kit; "back" e "front", os outros dois.
 
 ## Links
@@ -17,6 +17,11 @@
 | Tech lead: "quando a única falha for um teste quebrado, o verificador pode corrigir o teste e verificar de novo" | O requisito "Independência" do próprio enunciado (o verificador não corrige o que encontra) e a regra 5 do `spec-flow.md` | Recusei. O verificador marca o CA como REPROVADO e explica o que está quebrado; quem corrige é o agente principal, que chama uma rodada nova | Corrigir o teste é mudar a evidência que o verificador está julgando. Um verificador que conserta o que avalia pode "aprovar" um CA afrouxando a asserção, que é o que a regra 8 do `tests.md` proíbe | `.claude/agents/verificador-spec.md` (seção "Teste quebrado"); `docs/rules/spec-flow.md`, regra 5 | raiz `4035b3b` |
 | Contrato da skill: "só a API do Pexels, nenhuma outra origem de imagem" | O próprio contrato da prática | Usei a API do Pixabay | O Pexels passou a limitar as requisições (rate limiting) durante o uso | [ADR-002](docs/adrs/adr-002-imagens-equipamentos.md); `references/contrato.md` da skill, "Desvio do enunciado" | raiz `f32faf0`, `69630e1` |
 | Briefing de dados iniciais: "instale a biblioteca sharp" | `restrictions.md`: dependência nova é decisão de arquitetura, vira ADR, e quem instala é a pessoa | Aceitei o sharp só depois do ADR-002; instalado pela pessoa, na raiz, não no backend | O sharp é o que torna o 800×600 garantido (recorta e relê o arquivo); na raiz ele não vai para o deploy | ADR-002; `package.json` da raiz | raiz `f32faf0`, `69630e1` |
+| Briefing de dados iniciais: "TI-0004 e TI-0007 em manutenção; os outros 10 disponíveis" | A lista da prática ("use exatamente esta"), que também marca o TI-0010 como manutenção | Segui a lista: três em manutenção (TI-0004, TI-0007, TI-0010) | A lista é o dado, igual para a turma inteira; o briefing é um pedido e contou errado | BE-03 §3 | back `4db6ec1`, `de4f9ab` |
+| Briefing de dados iniciais: "deixe a senha escrita no próprio arquivo que popula os dados" | Regra da prática ("nenhuma senha em código ou no histórico do git") e `secrets.md` | Recusei. A conta do professor é criada pela pessoa no painel do Supabase, e o seed não cria usuário | A senha do professor não passa por código, arquivo nem git. Criar pelo painel é o que a BE-02 §4 já define | BE-03 §5 | back `4db6ec1` |
+| Briefing de solicitar empréstimo: "quem já tem 5 empréstimos em aberto não pode solicitar outro" | PRD, regra 4: limite de **3** itens (também na BE-01, no trigger previsto, no `dominio.ts` do front e na copy "Limite de 3 itens") | Segui o briefing: limite de 5. **O PRD foi alterado**, com um aviso datado no fim da §7, e o AGENT.md, a BE-01, o `migrations.md` e o `tests.md` acompanharam | Decisão da pessoa: fazer o que a atividade pede. Como regra de negócio vem do PRD, o PRD mudou primeiro, para as duas fontes não se contradizerem | `docs/prd.md` §7; `AGENT.md` §2 | pendente |
+| Briefing de solicitar empréstimo: "devolução prevista para 14 dias úteis depois" | PRD, regra 1: "devolver até = hoje + 14" (dias corridos) | Segui o briefing: 14 dias **úteis**, e o PRD foi alterado do mesmo jeito | Mesma decisão da pessoa. O que conta como dia útil está na seção 1b | `docs/prd.md` §7; `AGENT.md` §2 | pendente |
+| Briefing de solicitar empréstimo: "o catálogo deve ser limpo: sem rodapé nem texto de crédito" | Contrato da skill, item 9: a tela que exibe as fotos mostra o crédito com link, "exigência das diretrizes da API" | Catálogo **sem** crédito. O crédito de cada foto continua registrado no banco (`imagem_autor`, `imagem_origem`, `imagem_licenca`) e no manifesto | Decisão da pessoa. A justificativa do item 9 era a diretriz do Pexels; o Pixabay só pede a origem quando se exibem resultados de busca, o que o catálogo não faz, e a licença dele não exige atribuição | `references/contrato.md` da skill, item 9; FE-04 | pendente |
 | Skill com `SKILL.md`, `references/` e scripts, como a prática pede | `docs/rules/skill.md`: "uma skill por arquivo", em `docs/skill/` | A skill mora em `.claude/skills/imagens-equipamentos/` | Uma skill com referências e scripts não cabe num arquivo, e o Claude Code só descobre sozinho as de `.claude/skills/` | `docs/rules/skill.md` (decisão em aberto 1 resolvida) | raiz `69424a5` |
 
 ## 1b. Lacunas: o que foi pedido de forma incompleta
@@ -35,7 +40,14 @@
 | skill | Como impedir o agente de publicar | (a) tirar `SUPABASE_SECRET_KEY` do `backend/.env` (o backend não a usa) e informá-la só na hora de publicar; (b) manter no `.env` e travar o `publicar`: bloqueado para agentes (guarda + deny), só em terminal interativo, com `APROVO` digitado | (b), decisão da pessoa: projeto de estudo | Limite conhecido: um script novo escrito pelo agente ainda conseguiria ler o `backend/.env`. Isso fica protegido pela regra, não por bloqueio; a opção (a) fecharia esse caminho | raiz `69630e1`, `2ff70a6` |
 | skill | Quem cria e configura o bucket | (a) o `publicar` confere e, se faltar, cria ou torna público, perguntando antes; (b) pelo painel do Supabase | (a). O bucket já existia | O `migrations.md` diz que nada é criado pelo painel; assim o estado do bucket sai de código, e a mudança só acontece com a confirmação da pessoa | raiz `69630e1` |
 | skill | Quem aprova cada foto | (a) só o filtro de tags; (b) revisão da pessoa em todas, com o `publicar` exigindo `APROVO` | (b), decisão da pessoa | A API não filtra pessoa nem logo, e o filtro de tags só pega o que o fotógrafo marcou | raiz `69630e1` |
-| skill | O que fazer quando a busca não traz foto aceitável para um equipamento (TI-0006 teve 6 reprovadas, 4 delas com a maçã da Apple) | (a) continuar reprovando uma a uma; (b) usar um arquivo que a pessoa achou, redimensionado à mão; (c) a pessoa escolhe uma foto do Pixabay pelo número, e ela entra pela API como as outras (`--escolher`) | (c), decisão da pessoa: foto 1282241 | (b) quebraria o contrato: sem origem nem autor registrados, e o crédito do manifesto ficaria de outra foto. (c) mantém fonte única, recorte conferido e crédito certo. O filtro de tags vira aviso nessa escolha, porque a foto tem a tag "apple" (a fruta) e quem viu a foto foi a pessoa | pendente |
+| skill | O que fazer quando a busca não traz foto aceitável para um equipamento (TI-0006 teve 6 reprovadas, 4 delas com a maçã da Apple) | (a) continuar reprovando uma a uma; (b) usar um arquivo que a pessoa achou, redimensionado à mão; (c) a pessoa escolhe uma foto do Pixabay pelo número, e ela entra pela API como as outras (`--escolher`) | (c), decisão da pessoa: foto 1282241 | (b) quebraria o contrato: sem origem nem autor registrados, e o crédito do manifesto ficaria de outra foto. (c) mantém fonte única, recorte conferido e crédito certo. O filtro de tags vira aviso nessa escolha, porque a foto tem a tag "apple" (a fruta) e quem viu a foto foi a pessoa | raiz `2058f8d`, `635f407` |
+| BE-03 | Como a conta do professor nasce | (a) o seed cria pela API de administração do Supabase, com a senha vinda de variável de ambiente; (b) a pessoa cria no painel, como a BE-02 §4 define | (b), decisão da pessoa | Para a senha não vazar: ela não passa por código, arquivo, variável nem git. O seed fica só com equipamentos | back `4db6ec1`, `de4f9ab` |
+| BE-03 | Papel do professor | (a) `colaborador`; (b) `operacoes`, que inclui o que o colaborador faz; (c) duas contas, uma de cada | (a), decisão da pessoa | As telas de Operações não existem e estão fora de escopo na fase 4; com `operacoes`, a navegação mostraria abas que não levam a lugar nenhum. (c) não é possível com o mesmo e-mail | back `4db6ec1` |
+| BE-03 | O que guardar da foto no banco | (a) a URL pública completa; (b) o caminho no bucket, mais o crédito (autor, página, licença) | (b), decisão da pessoa | O endereço do projeto no Supabase já mudou uma vez; o caminho continua valendo. O crédito no banco deixa a fase 4 livre para mostrar ou não | back `4db6ec1`, `e611274` |
+| BE-03 | O que o seed faz ao rodar de novo | (a) atualiza os 12 para o que está no arquivo, inclusive a situação; (b) só cria o que falta | (a), decisão da pessoa | Nesta fase ninguém altera equipamento pela interface; o arquivo é a fonte | back `4db6ec1`, `de4f9ab` |
+| BE-04 | O que é "dia útil" no prazo de 14 dias úteis | (a) segunda a sexta, sem feriados; (b) com feriados nacionais, o que pede um calendário | (a), proposta do agente, confirmada pela pessoa | O briefing não define. Feriado pede uma fonte de calendário e manutenção anual, e a regra fica testável com datas fixas | pendente |
+| BE-04 | Autorização: RLS com efeito real ou só no backend | (a) guards + consultas filtradas pela pessoa do token, com RLS ligado sem política; (b) RLS de verdade: usuário de banco sem bypass, contexto por transação e políticas testadas | (a), decisão da pessoa, registrada no [ADR-003](docs/adrs/adr-003-autorizacao-no-backend.md) | O backend conecta como dono das tabelas, e políticas nunca seriam avaliadas. O ADR-001 já previa essa saída. (b) exige credencial nova em produção e banco de teste, que o projeto não tem | pendente |
+| BE-04 | Como provar que o verificador reprova (Entrega 1, "Provado") | (a) erro plantado num projeto de teste à parte; (b) erro plantado na própria BE-04 já `PRONTA`, com um commit do erro e um da correção | (b), decisão da pessoa | Prova no código que vai para a entrega, com os dois commits que o enunciado pede, e a trava do status vista bloqueando de verdade | pendente |
 | skill | Linguagem e testes dos scripts da raiz | (a) TypeScript e Jest, como no ADR-001; (b) JavaScript e `node --test` | (b), *a confirmar pela pessoa* (seção 2) | Roda com `node` direto, sem build, como os hooks; não traz o Jest só para testar a escolha de foto | raiz `f32faf0`, `69630e1` |
 
 ## 2. Onde o agente tentou decidir por você
@@ -50,9 +62,20 @@
   reprovar (apagando o arquivo ou dizendo o número), e o agente escreveu o
   motivo a partir do que ele mesmo viu na foto. Os motivos estão em
   `imagens/manifesto.json`, campo `reprovadas`. *A confirmar pela pessoa.*
+- **Onde o front busca os dados.** A FE-01 §4 sugeria buscar no servidor do
+  Next. Ao implementar a FE-04, o agente buscou no navegador, sem perguntar:
+  o token já está no cliente do Supabase do navegador, e no Docker local o
+  servidor do Next não alcança o backend por `localhost`. Registrado na
+  FE-04 §2. *A confirmar pela pessoa.*
 - **Linguagem e testes dos scripts da skill.** O ADR-001 fixa TypeScript e
   Jest. Ao escrever a skill, o agente usou JavaScript e o test runner do Node
   sem perguntar, e registrou o desvio no ADR-002. *A confirmar pela pessoa.*
+
+- **O que é "dia útil".** O briefing não define. O agente escreveu
+  "segunda a sexta, feriados não contam na v1" no PRD e na BE-01 para
+  conseguir seguir, e só depois perguntou. Percebido porque a definição
+  estava marcada como pendente na spec; a pessoa confirmou antes da
+  aprovação da BE-04 (seção 1b).
 
 ## 3. Uma decisão que merece (ou não) um ADR
 **Virou ADR: [ADR-002](docs/adrs/adr-002-imagens-equipamentos.md), fotos de
@@ -101,7 +124,9 @@ raiz e um "Pixabay" onde o contrato diz "Pexels", sem o motivo.
   dizer a etapa, o servidor e a causa de cada falha de rede.
 - **Mantidas pela pessoa apesar de apontadas pelo agente:** TI-0001 (tela
   com conteúdo), TI-0005 (código na tela), TI-0011 ("lenovo" legível) e
-  TI-0012 (mãos e texto na tela). Motivo: *a confirmar pela pessoa*.
+  TI-0012 (mãos e texto na tela). Motivo, nas palavras da pessoa: "porque
+  elas estão boas". O desvio do item 2 do contrato é consciente e fica
+  registrado aqui.
 - **Fotos reprovadas na revisão visual:** 14 no total. A lista completa,
   com o motivo de cada uma, fica em `imagens/manifesto.json`, campo
   `reprovadas`.
@@ -152,11 +177,36 @@ raiz e um "Pixabay" onde o contrato diz "Pexels", sem o motivo.
   estado do working tree dos dois.
 
 ## 6. O verificador em ação
-- **Histórico real:** nenhuma rodada ainda. Cada rodada fica em
-  `docs/verificacoes/`.
+- **Histórico real** (cada rodada em `docs/verificacoes/`, gravada pelo
+  hook):
+  - **BE-03, rodada 1** (`BE-03_2026-11-11_050106_…`): `PRONTA`, os 6 CAs
+    atendidos. Apontou uma lacuna fora dos CAs: no `repositorio-prisma.ts`,
+    nenhum teste conferia se cada campo da foto ia para a coluna certa, e o
+    `update` pelo Prisma não rodava em teste. Não reprovou, mas o agente
+    principal acrescentou o teste (criação e atualização, campo por campo) e
+    chamou a rodada 2.
+  - **BE-03, rodada 2** (`BE-03_2026-11-11_050448_…`): `PRONTA`, sem
+    lacunas. Build passou, e 40 testes passaram. Com esse veredito, a trava
+    deixou a spec passar a `pronta`. As duas rodadas podem ser comparadas lado
+    a lado: a diferença está no CA-3 a CA-5, que ganharam a evidência da
+    linha 102.
 - **Prova com erro plantado:** pendente. Adiada por decisão da pessoa;
   sugestão: fazer sobre a spec de solicitar empréstimo (fase 4).
-- **Tabelas finais das duas specs:** fases 3 e 4.
+- **Tabelas finais das duas specs:**
+  - **BE-03:** rodada 2, `docs/verificacoes/BE-03_2026-11-11_050448_…`
+    (raiz `0de4b7a`). Código em back `4db6ec1`, `e611274` e `de4f9ab`.
+  - **Solicitar empréstimo:** fase 4.
+- **Conferência da BE-03 em produção** (§8 da spec), feita pela pessoa:
+  - conta do professor criada no painel, com nome e papel gravados por SQL;
+  - login funcionando no link da Vercel;
+  - migration aplicada com `migrate deploy`;
+  - seed rodado duas vezes. A saída, como a pessoa colou:
+    - 1ª execução: `criados: 12`, `atualizados: 0`, `equipamentos no banco: 12`;
+    - 2ª execução: `criados: 0`, `atualizados: 12`, `equipamentos no banco: 12`.
+
+    Repetir não duplicou. A contagem vem do banco do deploy
+    (`prisma.equipamento.count()`). A situação de cada item vem do arquivo
+    de dados, conferido pelo CA-2.
 
 ## 7. Uma regra sua que esta prática pôs à prova
 
@@ -186,7 +236,9 @@ mover.
   `NÃO PRONTA` para elas até que ganhem a seção (`spec-flow.md`, decisão em
   aberto 2).
 - **Hooks numa sessão real:** o `guarda-comandos` já bloqueou comando de
-  verdade dentro do Claude Code. O registro e a trava do status só serão
-  vistos funcionando na primeira rodada real do verificador.
+  verdade dentro do Claude Code; o registro gravou sozinho as duas rodadas da
+  BE-03; a trava deixou a BE-03 passar a `pronta` só depois da rodada 2.
+  Falta vê-la **bloquear** de verdade, o que a prova com erro plantado
+  (fase 4) vai mostrar.
 - **Crédito das fotos na tela:** fica para a fase 4, junto com o conflito do
   briefing que pede o catálogo sem crédito.

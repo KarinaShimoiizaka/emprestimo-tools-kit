@@ -53,8 +53,12 @@ propósito — isso é o que justifica quase todas as decisões técnicas.
 
 ### Regras de negócio (v1)
 
-1. Limite de **3 itens** ativos por pessoa.
-2. Prazo padrão de **14 dias** (`devolver até = hoje + 14`).
+1. Limite de **5 itens** ativos por pessoa.
+2. Prazo padrão de **14 dias úteis** (`devolver até = hoje + 14 dias úteis`;
+   dia útil = segunda a sexta, feriados não contam na v1).
+
+   As duas regras mudaram em 11/11/2026 (eram 3 itens e 14 dias corridos),
+   para seguir o briefing da prática; ver o aviso no fim da §7 do PRD.
 3. Qualquer item **em atraso bloqueia** novos empréstimos da pessoa.
 4. Equipamento **em manutenção nunca conta como disponível**.
 5. **Escopo por pessoa**: cada usuário vê somente os próprios empréstimos; a
@@ -83,7 +87,7 @@ Decidida no [ADR-001](docs/adrs/adr-001-stack.md), status **aceito**.
 | Frontend | Next.js (React) + Tailwind CSS |
 | Como o front é servido | Separado do back (build, processo e deploy próprios) |
 | Autenticação | Supabase Auth |
-| Autorização | RLS no PostgreSQL (políticas do Supabase) + guards do Nest |
+| Autorização | guards do Nest + consultas filtradas pela pessoa do token; RLS ligado sem política só para fechar a API pública ([ADR-003](docs/adrs/adr-003-autorizacao-no-backend.md)) |
 | Acesso ao banco | Prisma |
 | Migrations | Prisma Migrate (**não** Flyway) |
 | Testes | Jest (**não** Vitest) |
@@ -144,7 +148,8 @@ caso o custo se mostre maior que o previsto.
 │   ├── specs/
 │   │   ├── spec-backend.md       BE-01 · backend
 │   │   ├── spec-autenticacao.md  BE-02 · autenticação e identidade
-│   │   └── spec-dados-iniciais.md BE-03 · dados iniciais
+│   │   ├── spec-dados-iniciais.md BE-03 · dados iniciais
+│   │   └── spec-emprestimos.md   BE-04 · solicitar empréstimo
 │   └── src/
 │       ├── main.ts              Nest em :3001 (PORT)
 │       ├── app.module.ts, app.controller.ts   rota GET /
@@ -152,6 +157,7 @@ caso o custo se mostre maior que o previsto.
 │       ├── perfil/              controller, service e testes do perfil
 │       ├── comum/               erros, filtro de exceção, value objects (email, papel)
 │       ├── dados-iniciais/      regra do seed (BE-03), testável sem banco
+│       ├── emprestimos/         GET /equipamentos, POST /emprestimos, GET /emprestimos/meus (BE-04)
 │       └── prisma/              PrismaService
 ├── frontend/                    repositório git próprio (front-do-projeto)
 │   ├── DockerFile               alvos `dev` e `runner`
@@ -163,20 +169,22 @@ caso o custo se mostre maior que o previsto.
 │   ├── specs/
 │   │   ├── spec-frontend.md      FE-01 · frontend
 │   │   ├── spec-catalogo.md      FE-02 · página inicial
-│   │   └── spec-login.md         FE-03 · login
+│   │   ├── spec-login.md         FE-03 · login
+│   │   └── spec-solicitar-emprestimo.md FE-04 · solicitar e meus empréstimos
 │   └── src/
 │       ├── middleware.ts        sem sessão, redireciona para /login
 │       ├── app/
 │       │   ├── layout.tsx       Raleway + html/body
 │       │   ├── globals.css      tokens Nocturne e classes de componente
-│       │   ├── page.tsx         Catálogo (tela de entrada)
+│       │   ├── page.tsx         Catálogo (tela de entrada), dados da API
+│       │   ├── meus-emprestimos/ Meus empréstimos (FE-04)
 │       │   └── login/           tela e formulário de login
 │       ├── components/          Navbar, CardEquipamento, Pill, FiltroChips, BannerAtraso,
 │       │                        ModalSolicitar, Toast, Marca, MolduraDeAutenticacao
 │       └── lib/
-│           ├── tipos.ts         Equipamento, Emprestimo, Filtro
-│           ├── dados.ts         dados de exemplo do PRD (seção 9)
-│           ├── dominio.ts       as 7 regras de negócio, isoladas da UI
+│           ├── tipos.ts         Equipamento, MeuEmprestimo, Filtro e os tipos da API
+│           ├── api.ts           cliente HTTP do backend (token, erro com a mensagem do servidor)
+│           ├── dominio.ts       as regras de negócio, isoladas da UI
 │           ├── sessao.ts, validacao-login.ts, mensagens-de-erro.ts
 │           └── supabase/        clientes do navegador e do servidor
 └── docs/
@@ -184,7 +192,8 @@ caso o custo se mostre maior que o previsto.
     ├── stacks.md                cópia idêntica de prd.md
     ├── adrs/
     │   ├── adr-001-stack.md     decisão de stack
-    │   └── adr-002-imagens-equipamentos.md  Pixabay, sharp, fora do deploy
+    │   ├── adr-002-imagens-equipamentos.md  Pixabay, sharp, fora do deploy
+    │   └── adr-003-autorizacao-no-backend.md  guards e service no lugar do RLS
     ├── skill/
     │   └── solid.md             princípios de código
     ├── verificacoes/            uma rodada do verificador por arquivo (escrita só pelo hook)
@@ -201,13 +210,14 @@ caso o custo se mostre maior que o previsto.
 
 **Estado atual:**
 
-- **Frontend:** Catálogo (`/`) com estado em memória e os dados de exemplo
-  do PRD; login com Supabase Auth (FE-03) e middleware que exige sessão.
-  Meus empréstimos, Operações e Equipamentos ainda não existem.
+- **Frontend:** Catálogo (`/`) e Meus empréstimos (`/meus-emprestimos`)
+  com dados da API (FE-04); login com Supabase Auth (FE-03) e middleware que
+  exige sessão. Operações e Equipamentos ainda não existem.
 - **Backend:** NestJS com autenticação e identidade (BE-02): valida o token
   do Supabase, provisiona o perfil e aplica guards de papel. Prisma com
-  `perfil` e `equipamento` (BE-03), e um seed com os 12 equipamentos da
-  prática. Empréstimos e endpoints de equipamento ainda não existem.
+  `perfil`, `equipamento` e `emprestimo`, um seed com os 12 equipamentos da
+  prática (BE-03) e as rotas de solicitar empréstimo (BE-04). Devolução e
+  Operações ainda não existem.
 - **Testes:** Jest instalado nas duas pontas; `npm test` roda em cada uma.
 
 Não preencha o que falta por iniciativa própria (ver
