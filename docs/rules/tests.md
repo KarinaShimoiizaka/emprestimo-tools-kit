@@ -27,7 +27,7 @@ abre conexão de verdade com o banco não roda com esse `.env` (regra 7).
 | # | Ponta | Nível | O quê |
 |---|---|---|---|
 | 1 | backend | unitário | service de empréstimos: cada regra de negócio, com o caso que passa e o que falha |
-| 2 | backend | integração, banco real | índice único barra o segundo empréstimo do mesmo item; trigger barra o quarto item da mesma pessoa |
+| 2 | backend | integração, banco real | índice único barra o segundo empréstimo do mesmo item; trigger barra o sexto item da mesma pessoa |
 | 3 | backend | integração, banco real | **RLS ligado**: conectado como o usuário da aplicação, `select` sem contexto não devolve nada |
 | 4 | frontend | unitário | `src/lib/dominio.ts` inteiro |
 | 5 | frontend | componente | card em cada situação; modal de solicitar |

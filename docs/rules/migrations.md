@@ -31,7 +31,7 @@ Tudo que define o banco, não só as tabelas:
 - tabelas, colunas, chaves e índices;
 - constraints e índices parciais (`emprestimo_aberto_unico`,
   `prazo_coerente` — BE-01 §3);
-- triggers (limite de 3 por pessoa, trava de manutenção);
+- triggers (limite de 5 por pessoa, trava de manutenção);
 - **políticas de RLS**, `grant`s e o usuário da aplicação sem bypass.
 
 O que o `schema.prisma` não expressa (trigger, política, índice parcial,
