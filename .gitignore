@@ -14,8 +14,13 @@ atividade/
 # Configuração pessoal do Claude Code
 .claude/settings.local.json
 
-# Dependências, se um dia houver script na raiz
+# Dependências da raiz (sharp, ADR-002)
 node_modules/
+
+# Skill imagens-equipamentos: fotos prontas, página de revisão e cache da
+# API ficam fora do git. Só o manifesto (escolhas e créditos) é versionado.
+imagens/*
+!imagens/manifesto.json
 
 # Sistema operacional e editor
 .DS_Store

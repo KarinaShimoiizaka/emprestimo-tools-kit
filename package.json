@@ -1,0 +1,16 @@
+{
+  "name": "emprestimo-tools-kit",
+  "private": true,
+  "description": "Ferramentas do EMPREST.AI que não vão para o deploy: skill de fotos de equipamento e testes dos hooks.",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "imagens:preparar": "node .claude/skills/imagens-equipamentos/scripts/preparar.js",
+    "imagens:publicar": "node .claude/skills/imagens-equipamentos/scripts/publicar.js",
+    "test": "node --test .claude/skills/imagens-equipamentos/scripts/selecao.test.js && node .claude/hooks/testa-hooks.js"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}
