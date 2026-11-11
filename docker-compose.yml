@@ -1,0 +1,89 @@
+# ---------------------------------------------------------------------------
+# EMPREST.AI — ambiente local.
+#
+#   docker compose up                      → banco + frontend  (funciona hoje)
+#   docker compose --profile backend up    → banco + backend + frontend
+#
+# O backend ficou atrás de um profile quando backend/ ainda não tinha
+# código e o build da imagem falhava. Hoje o projeto NestJS existe: use o
+# profile, ou tire a linha `profiles` do serviço para ele subir junto por
+# padrão (decisão da pessoa).
+#
+# Os DockerFile têm o F maiúsculo (foi assim que nasceram no repositório),
+# por isso cada serviço aponta o nome do arquivo explicitamente.
+# ---------------------------------------------------------------------------
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: emprestimo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-emprestimo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-emprestimo}
+      POSTGRES_DB: ${POSTGRES_DB:-emprestimo}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # O backend só arranca depois que o banco aceita conexão de verdade.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-emprestimo} -d ${POSTGRES_DB:-emprestimo}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    profiles: ["backend"]
+    build:
+      context: ./backend
+      dockerfile: DockerFile
+      target: dev
+    container_name: emprestimo-backend
+    restart: unless-stopped
+    # Traz SUPABASE_*, STORAGE_NAME e afins sem copiar segredo para cá.
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      # Sobrescreve o DATABASE_URL do .env para apontar ao Postgres local.
+      # Apague estas duas linhas para usar o banco que estiver no .env.
+      #
+      # Nota do ADR-001: este usuário não pode ser dono das tabelas nem ter
+      # BYPASSRLS, senão as políticas de RLS não são avaliadas.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-emprestimo}:${POSTGRES_PASSWORD:-emprestimo}@db:5432/${POSTGRES_DB:-emprestimo}?schema=public
+      DIRECT_URL: postgresql://${POSTGRES_USER:-emprestimo}:${POSTGRES_PASSWORD:-emprestimo}@db:5432/${POSTGRES_DB:-emprestimo}?schema=public
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      # Volumes anônimos: o node_modules e o dist do container não são
+      # sobrescritos pelo bind mount da máquina.
+      - /app/node_modules
+      - /app/dist
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: DockerFile
+      target: dev
+    container_name: emprestimo-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      # Lido pelo navegador, por isso localhost e não o nome do serviço.
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres-data:

@@ -1,0 +1,25 @@
+# Repositórios próprios, versionados à parte
+backend/
+frontend/
+
+# Enunciado da prática: contém a senha padrão da turma, e senha não entra
+# no histórico do git (regra da prática e docs/rules/secrets.md)
+atividade/
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Configuração pessoal do Claude Code
+.claude/settings.local.json
+
+# Dependências, se um dia houver script na raiz
+node_modules/
+
+# Sistema operacional e editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
